@@ -33,12 +33,22 @@ async def create_app(container: Container, presentation: Presentation) -> FastAP
     @app.post("/batches")
     async def upload_batch(batch: UploadFile) -> bool:
         try:
-            await presentation.create_upload_file(batch)
+            await presentation.upload_batch(batch)
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(e)}"
             ) from e
 
+        return True
+
+    @app.delete("/batches")
+    async def delete_batch(batch_name:str) ->bool:
+        try:
+            await presentation.delete_batch(batch_name)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(e)}"
+            ) from e
         return True
 
     return app

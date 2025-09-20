@@ -31,7 +31,7 @@ class Service:
 
     async def delete_batch(self, batch_name:str)-> ClientError | None:
         try:
-            self.minio.client.delete_object(self.minio.bucket_name, batch_name)
+            self.minio.client.delete_object(Bucket=self.minio.bucket_name, Key=batch_name)
         except ClientError as e:
             return e
         return
