@@ -1,7 +1,7 @@
 import asyncio
 
 import uvicorn
-from presentation.web.app import create_app
+from presentations.web.app import create_app
 from shared.containers import Container
 from shared.settings import app_settings
 

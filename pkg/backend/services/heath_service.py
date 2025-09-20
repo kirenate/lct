@@ -2,8 +2,8 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 from loguru import logger
-from repository.pg_repository import PgRepository
-from repository.redis_repository import RedisRepository
+from repositories.pg_repository import PgRepository
+from repositories.redis_repository import RedisRepository
 
 
 class CheckFailedError(Exception): ...

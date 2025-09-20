@@ -24,10 +24,16 @@ class Redis(PureBaseModel):
     port: int = 6379
 
 
+class Minio(PureBaseModel):
+    aws_access_key_id: str = "YOUR_KEY"
+    aws_secret_access_key: str = "YOUR_SECRET"
+
+
 class AppSettings(BaseSettings):
     pg: Postgres = Postgres()
     uvicorn: Uvicorn = Uvicorn()
     redis: Redis = Redis()
+    minio: Minio = Minio()
 
     model_config = SettingsConfigDict(env_file=".env", env_prefix="_", env_nested_delimiter="__")
 
