@@ -21,23 +21,6 @@ class MinioRepository:
         if not await self.client.ping():
             raise Exception("non true ping")
 
-    async def create_bucket(self, bucket_name: str) -> bool:
-        try:
-            self.client.create_bucket(Bucket=bucket_name)
-        except ClientError as e:
-            logger.error(e)
-            return False
-        return True
-
-    async def upload_file(self, file_name: str, bucket: str):
-        # If S3 object_name was not specified, use file_name
-        try:
-            response = self.client.upload_file(file_name, bucket)
-        except ClientError as e:
-            logger.error(e)
-            return False
-        return True
-
 class ProgressPercentage(object):
 
     def __init__(self, filename):
