@@ -22,10 +22,16 @@ class Service:
         self.minio = MinioRepository()
 
     async def save_batch(self, batch: bytes, filename: str) -> ClientError | None :
-        object_name = os.path.basename(filename)
         try:
-            self.minio.client.upload_fileobj(io.BytesIO(batch), self.minio.bucket_name, object_name)
+            self.minio.client.upload_fileobj(io.BytesIO(batch), self.minio.bucket_name, filename)
 
+        except ClientError as e:
+            return e
+        return
+
+    async def delete_batch(self, batch_name:str)-> ClientError | None:
+        try:
+            self.minio.client.delete_object(self.minio.bucket_name, batch_name)
         except ClientError as e:
             return e
         return
