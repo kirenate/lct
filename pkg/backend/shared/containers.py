@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from repositories.pg_repository import PgRepository
 from repositories.redis_repository import RedisRepository
 from services.heath_service import HealthService
+from presentations.web.presentation import Presentation
 
 
 @dataclass

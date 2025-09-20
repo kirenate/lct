@@ -1,11 +1,11 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from shared.containers import Container
+from presentations.web.presentation import Presentation
 
-
-async def create_app(container: Container) -> FastAPI:
+async def create_app(container: Container, presentation: Presentation) -> FastAPI:
     app = FastAPI(title="MISIS_MCs", root_path="/api")
     app.add_middleware(
         CORSMiddleware,
@@ -17,7 +17,7 @@ async def create_app(container: Container) -> FastAPI:
 
     @app.on_event("startup")
     async def startup() -> None:
-        FastAPICache.init(RedisBackend(container.redis_repository.ar), prefix="fastapi-cache")
+        FastAPICache.init(RedisBackend(presentation.service.redis.ar), prefix="fastapi-cache")
 
     @app.get("/health")
     async def check_server_health() -> bool:
@@ -27,6 +27,17 @@ async def create_app(container: Container) -> FastAPI:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(exc)}"
             ) from exc
+
+        return True
+
+    @app.post("/batches")
+    async def upload_batch(batch: UploadFile) -> bool:
+        try:
+            await presentation.create_upload_file(batch)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(e)}"
+            ) from e
 
         return True
 

@@ -27,6 +27,7 @@ class Redis(PureBaseModel):
 class Minio(PureBaseModel):
     aws_access_key_id: str = "YOUR_KEY"
     aws_secret_access_key: str = "YOUR_SECRET"
+    bucket_name:str="scans"
 
 
 class AppSettings(BaseSettings):

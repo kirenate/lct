@@ -13,9 +13,15 @@ class MinioRepository:
     def __post_init__(self) -> None:
         self.client = boto3.client(
             "s3",
+            endpoint_url='http://localhost:9000',
             aws_access_key_id=app_settings.minio.aws_access_key_id,
             aws_secret_access_key=app_settings.minio.aws_secret_access_key,
         )
+        self.bucket_name = app_settings.minio.bucket_name
+        try:
+            self.client.create_bucket(Bucket=self.bucket_name)
+        except Exception as e:
+            logger.error(e)
 
     async def health(self) -> None:
         if not await self.client.ping():
