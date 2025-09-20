@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запрос на localhost</title>
+    <script>
+        function sendRequest() {
+            fetch('http://localhost:80/api/health')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('result').innerText = 'ОК';
+                    } else {
+                        response.text().then(text =>
+                            document.getElementById('result').innerText = `Ошибка, не успешный ответ: code: ${response.status} text: ${text}`);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = `'Ошибка, не удалось отправить запрос: ${error}`;
+                });
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Проверка соединения</h1>
+    <button onclick="sendRequest()">Отправить запрос</button>
+    <p id="result"></p>
+</body>
+
+</html>
