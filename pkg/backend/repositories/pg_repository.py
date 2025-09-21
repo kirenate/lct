@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from pydantic import BaseModel
 from shared.settings import app_settings
 from sqlalchemy import text
 from sqlalchemy.dialects import postgresql

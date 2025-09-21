@@ -4,6 +4,8 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from shared.containers import Container
 from presentations.web.presentation import Presentation
+from services.filter_service import Filter
+from schemas.responses import DocumentResponse, Document
 
 async def create_app(container: Container, presentation: Presentation) -> FastAPI:
     app = FastAPI(title="MISIS_MCs", root_path="/api")
@@ -30,10 +32,10 @@ async def create_app(container: Container, presentation: Presentation) -> FastAP
 
         return True
 
-    @app.post("/batches")
-    async def upload_batch(batch: UploadFile) -> bool:
+    @app.post("/documents")
+    async def upload_batch(file: UploadFile) -> bool:
         try:
-            await presentation.upload_batch(batch)
+            await presentation.upload_batch(file)
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(e)}"
@@ -41,14 +43,21 @@ async def create_app(container: Container, presentation: Presentation) -> FastAP
 
         return True
 
-    @app.delete("/batches")
-    async def delete_batch(batch_name:str) ->bool:
+    @app.delete("/documents")
+    async def delete_batch(document_id:str) ->bool:
         try:
-            await presentation.delete_batch(batch_name)
+            await presentation.delete_batch(document_id)
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(e)}"
             ) from e
         return True
 
+    @app.get("/documents")
+    async def get_documents(page:integer, pageSize:integer, sortby:str, filters:list[Filter])->Document:
+        resp = DocumentResponse()
+        return resp
+
+    @app.get("/documents/{documentId}/pages")
+    async def get_document_pages(documentId:str, page:integer, pageSize:integer, sortby:str, filters:list[Filter]) ->DocumentResponse:
     return app
