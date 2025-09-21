@@ -1,13 +1,14 @@
-from fastapi import FastAPI, HTTPException, status, UploadFile
+from fastapi import FastAPI, HTTPException, status, UploadFile, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from shared.containers import Container
-from presentations.web.presentation import Presentation
 from services.filter_service import Filter
-from schemas.responses import DocumentResponse, Document
+import uuid
+from schemas.responses import PageResponseMeta, DocumentResponseMeta
+from services.batch_processing_service import Service
 
-async def create_app(container: Container, presentation: Presentation) -> FastAPI:
+async def create_app(container: Container, service: Service) -> FastAPI:
     app = FastAPI(title="MISIS_MCs", root_path="/api")
     app.add_middleware(
         CORSMiddleware,
@@ -19,7 +20,7 @@ async def create_app(container: Container, presentation: Presentation) -> FastAP
 
     @app.on_event("startup")
     async def startup() -> None:
-        FastAPICache.init(RedisBackend(presentation.service.redis.ar), prefix="fastapi-cache")
+        FastAPICache.init(RedisBackend(service.redis.ar), prefix="fastapi-cache")
 
     @app.get("/health")
     async def check_server_health() -> bool:
@@ -33,31 +34,30 @@ async def create_app(container: Container, presentation: Presentation) -> FastAP
         return True
 
     @app.post("/documents")
-    async def upload_batch(file: UploadFile) -> bool:
-        try:
-            await presentation.upload_batch(file)
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(e)}"
-            ) from e
+    async def upload_document(file: UploadFile) -> uuid.UUID:
+        res = await service.save_document(bytes(await file.read()), str(file.filename))
+        await file.seek(0)
+        return res
 
-        return True
 
-    @app.delete("/documents")
-    async def delete_batch(document_id:str) ->bool:
-        try:
-            await presentation.delete_batch(document_id)
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="{exc.__class__.__name__}: {str(e)}"
-            ) from e
-        return True
+    @app.delete("/documents/{documentId: uuid.UUID }")
+    async def delete_document(document_id: uuid.UUID) -> None:
+        await service.delete_document(document_id)
 
-    @app.get("/documents")
-    async def get_documents(page:integer, pageSize:integer, sortby:str, filters:list[Filter])->Document:
-        resp = DocumentResponse()
+
+    @app.post("/documents/get")
+    async def get_documents(page:int = Query(...), page_size: int = Query(..., alias="pageSize"),
+                            sort_by: str = Query(..., alias="sortBy"),
+                            filters: list[Filter] = Body(...))->DocumentResponseMeta:
+        return DocumentResponseMeta()
+
+    @app.post("/documents/{documentId: uuid.UUID}/pages/get")
+    async def get_document_pages(document_id: uuid.UUID = Query(...,alias="documentId"), page:int = Query(...),
+                                 page_size:int = Query(...,alias="pageSize"),
+                                 sort_by:str = Query(..., alias="sortBy"),
+                                 filters:list[Filter] = Body(...)) ->PageResponseMeta:
+        resp = PageResponseMeta()
         return resp
 
-    @app.get("/documents/{documentId}/pages")
-    async def get_document_pages(documentId:str, page:integer, pageSize:integer, sortby:str, filters:list[Filter]) ->DocumentResponse:
+
     return app

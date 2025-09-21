@@ -1,31 +1,42 @@
 from fastapi.responses import JSONResponse
 from schemas.base import CamelizedBaseModel
-
+import uuid
+import datetime
 
 
 class Attribute(CamelizedBaseModel):
-    data:str                            #TODO : set correct json here
+    data:bytes                            #TODO : set correct json here
 
-class Page(CamelizedBaseModel):
+class PageMetadata(CamelizedBaseModel):
     id: uuid.UUID
+    document_id: uuid.UUID
     name: str
-    size: integer
-    number: integer
+    size: int
+    number: int
     attributes: list[Attribute]
 
-class Document(CamelizedBaseModel):
+class Page(CamelizedBaseModel):
+    id:uuid.UUID
+    meta:PageMetadata
+
+class DocumentMetadata(CamelizedBaseModel):
     id: uuid.UUID
     name: str
-    size: integer
-    created_at: datetime
-    updated_at: datetime
+    size: int
+    page_size: int
+    pages: list[PageMetadata]
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
 class DocumentResponseSchema(CamelizedBaseModel):
-    data: bytes
-    meta: Document
+    data: list[Page]
+    meta: DocumentMetadata
 
-class DocumentResponse(CamelizedBaseModel):
-    document: list[DocumentResponseSchema]
+class DocumentResponseMeta(CamelizedBaseModel):
+    documents: list[DocumentMetadata]
+    has_next: bool
 
-
+class PageResponseMeta(CamelizedBaseModel):
+    pages: list[PageMetadata]
+    has_next: bool
 

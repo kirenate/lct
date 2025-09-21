@@ -1,20 +1,16 @@
 import asyncio
 
 import uvicorn
-from more_itertools.more import bucket
-
 from presentations.web.app import create_app
 from shared.containers import Container
 from shared.settings import app_settings
-from presentations.web.presentation import Presentation
 from services.batch_processing_service import Service
 
 
 async def main() -> None:
     container = await Container.build_from_settings()
     service = Service()
-    presentation = Presentation(service)
-    app = await create_app(container, presentation)
+    app = await create_app(container, service)
 
     server = uvicorn.Server(
         uvicorn.Config(
