@@ -18,7 +18,7 @@ class Service:
 
     async def save_document(self, batch: bytes, filename: str) ->  uuid.UUID :
         uid = uuid.uuid4()
-        self.minio.client.upload_fileobj(io.BytesIO(batch), self.minio.bucket_name, str(uid))
+        self.minio.client.upload_fileobj(io.BytesIO(batch), self.minio.bucket_name, str(uid)+".png")
         return uid
 
     async def delete_document(self, document_id:uuid.UUID)-> None:
