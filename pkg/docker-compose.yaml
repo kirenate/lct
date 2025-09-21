@@ -105,5 +105,3 @@ services:
       - MINIO_BROWSER_REDIRECT_URL=http://127.0.0.1:9001
       - MINIO_SERVER_URL=http://127.0.0.1:9000
     command: server --address ":9000" --console-address ":9001" /data
-    networks:
-      - app-tier
