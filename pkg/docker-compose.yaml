@@ -95,7 +95,7 @@ services:
     dns:
       - 8.8.8.8
     volumes:
-      - ./data:/data
+      - ./volumes/minio/data:/minio/data
     ports:
       - 9000:9000
       - 9001:9001

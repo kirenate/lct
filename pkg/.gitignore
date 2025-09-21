@@ -6,6 +6,8 @@ frontend/node_modules
 backend/cite_data.json
 backend/.env
 
+
+
 ### SAM BUILD ###
 **/.aws-sam
 ### SAM TEMPLATE ###
