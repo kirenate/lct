@@ -18,6 +18,8 @@ async def main() -> None:
             host=app_settings.uvicorn.host,
             port=app_settings.uvicorn.port,
             workers=app_settings.uvicorn.workers,
+            ssl_keyfile=app_settings.uvicorn.ssl_keyfile,
+            ssl_certfile=app_settings.uvicorn.ssl_certfile,
         )
     )
     await server.serve()

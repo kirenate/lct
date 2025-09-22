@@ -17,6 +17,8 @@ class Uvicorn(PureBaseModel):
     port: int = 8000
     workers: int = mp.cpu_count() * 2 + 1
     log_level: str = "WARNING"
+    ssl_keyfile:str = ""
+    ssl_certfile:str = ""
 
 
 class Redis(PureBaseModel):
