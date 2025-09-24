@@ -40,7 +40,7 @@ async def create_app(container: Container, service: Service) -> FastAPI:
         return res
 
 
-    @app.delete("/documents/{documentId: uuid.UUID }")
+    @app.delete("/documents/{documentId}")
     async def delete_document(document_id: uuid.UUID) -> None:
         await service.delete_document(document_id)
 
@@ -51,7 +51,7 @@ async def create_app(container: Container, service: Service) -> FastAPI:
                             filters: list[Filter] = Body(...))->DocumentResponseMeta:
         return DocumentResponseMeta()
 
-    @app.post("/documents/{documentId: uuid.UUID}/pages/get")
+    @app.post("/documents/{documentId}/pages/get")
     async def get_document_pages(document_id: uuid.UUID = Query(...,alias="documentId"), page:int = Query(...),
                                  page_size:int = Query(...,alias="pageSize"),
                                  sort_by:str = Query(..., alias="sortBy"),

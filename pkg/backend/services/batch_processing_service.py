@@ -4,6 +4,8 @@ import io
 from repositories.pg_repository import PgRepository
 from repositories.redis_repository import RedisRepository
 from repositories.minio_repository import MinioRepository
+import pymupdf
+from PIL  import Image
 
 @dataclass
 class Service:
@@ -18,6 +20,15 @@ class Service:
 
     async def save_document(self, batch: bytes, filename: str) ->  uuid.UUID :
         uid = uuid.uuid4()
+        ext = filename.split(".")[-1]
+        if ext == "pdf":
+            doc = pymupdf.open(batch)
+            page = doc.load_page(0)
+            pixmap = page.get_pixmap(dpi=300)
+            img = pixmap.tobytes()
+            self.minio.client.upload_fileobj(io.BytesIO(img), self.minio.bucket_name, str(uid) + ".png")
+            return uid
+
         self.minio.client.upload_fileobj(io.BytesIO(batch), self.minio.bucket_name, str(uid)+".png")
         return uid
 

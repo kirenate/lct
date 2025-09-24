@@ -30,7 +30,8 @@ pydantic-settings = "^2.2.1"
 boto3="^1.40.35"
 botocore = "^1.40.35"
 python-multipart = "^0.0.20"
-
+pillow="^11.3.0"
+pymupdf="^1.26.4"
 
 [build-system]
 requires = ["poetry-core"]
