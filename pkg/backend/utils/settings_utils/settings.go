@@ -10,7 +10,12 @@ type settings struct {
 	MinioEndpoint        string `env:"MINIO_ENDPOINT"      envDefault:"localhost:9000"`
 	MinioBucketName      string `env:"MINIO_BUCKET_NAME"   envDefault:"scans"`
 
-	MongoURI string `env:"MONGO_URI"                       envDefault:"mongodb://localhost:27017"`
+	PgDb       string `env:"PG_DB"`
+	PgHost     string `env:"PG_HOST"`
+	PgPort     int    `env:"PG_PORT"`
+	PgUsername string `env:"PG_USERNAME"`
+	PgPassword string `env:"PG_PASSWORD"`
+
 	TLS      bool   `env:"TLS"                             envDefault:"false"`
 	URL      string `env:"URL"                             envDefault:"0.0.0.0:8081"`
 	CertFile string `env:"CERT_FILE"                       envDefault:"./.data/cert.pem"`

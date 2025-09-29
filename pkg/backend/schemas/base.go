@@ -6,46 +6,50 @@ import (
 )
 
 type Attribute struct {
-	id         uuid.UUID
-	name       string
-	value      string
-	confidence int
-	x1         int
-	y1         int
-	x2         int
-	y2         int
+	ID         uuid.UUID
+	PageId     uuid.UUID
+	DocumentId uuid.UUID
+	Name       string
+	Value      string
+	Confidence int
+	X1         int
+	Y1         int
+	X2         int
+	Y2         int
 }
 
 type Text struct {
-	id   uuid.UUID
-	text string
-	x1   int
-	y1   int
-	x2   int
-	y2   int
+	ID         uuid.UUID
+	PageId     uuid.UUID
+	DocumentId uuid.UUID
+	Text       string
+	X1         int
+	Y1         int
+	X2         int
+	Y2         int
 }
 type PageMetadata struct {
-	id         uuid.UUID
-	documentId uuid.UUID
-	thumb      string
-	original   string
-	number     int
-	fullText   []Text
-	attributes []Attribute
+	ID         uuid.UUID
+	DocumentId uuid.UUID
+	Thumb      string
+	Original   string
+	Number     int
+	FullText   []Text
+	Attributes []Attribute
 }
 
 type Page struct {
-	id   uuid.UUID
-	meta *PageMetadata
+	ID   uuid.UUID
+	Meta *PageMetadata
 }
 
 type DocumentMetadata struct {
-	id        uuid.UUID
-	code      string
-	name      string
-	status    string
-	progress  int
-	min       int
-	max       int
-	createdAt time.Time
+	ID        uuid.UUID
+	Code      string
+	Name      string
+	Status    string
+	Progress  int
+	Min       int
+	Max       int
+	CreatedAt time.Time
 }

@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
 	minio2 "github.com/minio/minio-go"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 	"main.go/presentations/web"
+	"main.go/schemas"
 	"main.go/services"
 	"main.go/utils/settings_utils"
 )
@@ -17,12 +21,22 @@ func main() {
 		panic(errors.Wrap(err, "failed to initiate minio client"))
 	}
 
-	mongoClient, err := mongo.Connect(options.Client().ApplyURI(settings_utils.Settings.MongoURI))
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		settings_utils.Settings.PgHost, settings_utils.Settings.PgPort, settings_utils.Settings.PgUsername,
+		settings_utils.Settings.PgPassword, settings_utils.Settings.PgDb)
+
+	db, err := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), NamingStrategy: schema.NamingStrategy{SingularTable: true}})
 	if err != nil {
 		panic(errors.Wrap(err, "failed to connect database"))
 	}
 
-	service := services.NewService(minio, mongoClient)
+	err = db.AutoMigrate(&schemas.DocumentMetadata{}, &schemas.PageMetadata{}, &schemas.Attribute{}, &schemas.Text{})
+	if err != nil {
+		panic(errors.Wrap(err, "failed to merge database"))
+	}
+
+	service := services.NewService(minio, db)
 	presentation := web.NewPresentation(service)
 
 	app := presentation.BuildApp()
