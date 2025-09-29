@@ -1,11 +1,14 @@
 from dataclasses import dataclass
-from pydantic import BaseModel
+
+from sqlalchemy.dialects.postgresql import insert
+
 from shared.settings import app_settings
 from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.schema import CreateTable
-
+from schemas.responses import PageMetadata
+from schemas.tables import PageMetadataTable, DocumentMetadataTable
 
 @dataclass
 class PgRepository:
@@ -18,6 +21,7 @@ class PgRepository:
             pool_size=pool_size,
             max_overflow=max_overflow,
         )
+        self._aengine.connect().execute(text(self.compile_table(PageMetadataTable)))
 
     async def health(self) -> None:
         async with self._aengine.connect() as session:
@@ -25,6 +29,12 @@ class PgRepository:
             one = result.fetchone()
             if one is not None and one[0] != 1:
                 raise Exception('Should be 1 from "select 1"')
+
+    async def save_page(self, page: PageMetadata)->None:
+
+         session =  self._aengine.connect()
+         await session.execute(insert(PageMetadataTable).values({"page": page}))
+
 
     @staticmethod
     def compile_table(table) -> str:  # noqa: ANN001

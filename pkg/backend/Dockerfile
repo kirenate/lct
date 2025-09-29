@@ -1,25 +1,27 @@
-FROM python:3.12-slim
+FROM golang:1.24-bullseye AS build
 
-ENV PYTHONFAULTHANDLER=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONHASHSEED=random \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.0.0
+WORKDIR /src
 
-RUN apt-get update && \
-    apt-get install -y gcc python3-dev curl && \
-    rm -rf /var/lib/apt/lists/*
-RUN pip install "poetry==1.8.3"
+# Copy only dependency files first
+COPY go.mod go.sum ./
 
-COPY pyproject.toml ./
+# Download dependencies
+RUN go mod download
 
-RUN poetry config virtualenvs.create false \
-    && poetry install --only main --no-interaction --no-ansi
+# Copy the rest of the source code
+COPY . .
 
-COPY . /app
+RUN make build
 
-WORKDIR /app
+## Now copy it into our base image.
+FROM debian:trixie
 
-CMD ["python3", "web_entrypoint.py"]
+RUN rm -rf /var/lib/apt/lists/* \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl
+RUN update-ca-certificates
+RUN rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /src/bootstrap /
+
+CMD ["/bootstrap"]

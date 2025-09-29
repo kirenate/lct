@@ -13,7 +13,7 @@ class PageMetadata(CamelizedBaseModel):
     name: str
     size: int
     number: int
-    attributes: list[Attribute]
+    attributes: list[Attribute] | None
 
 class Page(CamelizedBaseModel):
     id:uuid.UUID

@@ -1,0 +1,30 @@
+services:
+
+  minio:
+    image: elestio/minio:latest
+    restart: always
+    dns:
+      - 8.8.8.8
+    volumes:
+      - ./volumes/minio/data:/minio/data
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - MINIO_ROOT_USER=minio-root-user
+      - MINIO_ROOT_PASSWORD=minio-root-password
+      - MINIO_BROWSER_REDIRECT_URL=http://127.0.0.1:9001
+      - MINIO_SERVER_URL=http://127.0.0.1:9000
+    command: server --address ":9000" --console-address ":9001" /data
+
+  mongodb:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data/db
+    ports:
+      - "27017:27017"

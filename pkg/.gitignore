@@ -5,8 +5,9 @@ volumes/*
 frontend/node_modules
 backend/cite_data.json
 backend/.env
-
-
+backend/.data
+backend/data
+backend/volumes
 
 ### SAM BUILD ###
 **/.aws-sam

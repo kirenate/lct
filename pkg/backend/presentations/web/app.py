@@ -33,9 +33,9 @@ async def create_app(container: Container, service: Service) -> FastAPI:
 
         return True
 
-    @app.post("/documents")
-    async def upload_document(file: UploadFile) -> uuid.UUID:
-        res = await service.save_document(bytes(await file.read()), str(file.filename))
+    @app.post("/documents/{documentId}/pages")
+    async def upload_document(file: UploadFile, document_id:uuid.UUID) -> uuid.UUID:
+        res = await service.save_document(bytes(await file.read()), str(file.filename), document_id)
         await file.seek(0)
         return res
 
