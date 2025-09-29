@@ -34,12 +34,8 @@ func (r *Service) DeleteDocument(documentId uuid.UUID) error {
 	return nil
 }
 
-func (r *Service) UploadFile(doc *multipart.FileHeader, minim, maxim int, name string) error {
+func (r *Service) UploadDocument(minim, maxim int, name string) (*uuid.UUID, error) {
 	uid := uuid.New()
-	contents, err := doc.Open()
-	if err != nil {
-		return errors.Wrap(err, "failed to open uploaded file")
-	}
 
 	now := time.Now().UTC()
 	document := &schemas.DocumentMetadata{
@@ -51,12 +47,38 @@ func (r *Service) UploadFile(doc *multipart.FileHeader, minim, maxim int, name s
 		Max:       maxim,
 		CreatedAt: now,
 	}
+	err := r.repository.SaveDocToPg(document)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to save document to postgres")
+	}
+	return &uid, nil
+}
+
+func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, number int) error {
+	uid := uuid.New()
+
+	contents, err := doc.Open()
+	if err != nil {
+		return errors.Wrap(err, "failed to open uploaded page")
+	}
+	page := &schemas.PageMetadata{
+		ID:         uid,
+		DocumentId: documentId,
+		Thumb:      "",
+		Original:   "",
+		Number:     number,
+		FullText:   nil,
+		Attributes: nil,
+	}
+
 	err = r.repository.SaveToMinio(doc, uid, contents)
 	if err != nil {
-		return errors.Wrap(err, "failed to save file to minio")
+		return errors.Wrap(err, "failed to save page to minio")
 	}
-	var pages []schemas.PageMetadata
-	err = r.repository.SaveToPg(document, &pages)
+	err = r.repository.SavePageToPg(page)
+	if err != nil {
+		return errors.Wrap(err, "failed to save page to postgres")
+	}
 
 	return nil
 }

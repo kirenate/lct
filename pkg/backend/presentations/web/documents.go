@@ -46,7 +46,7 @@ func (r *Presentation) deleteDocument(c *fiber.Ctx) error {
 }
 
 func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
-	doc, err := c.FormFile("file")
+	doc, err := c.MultipartForm()
 	if err != nil {
 		return &fiber.Error{
 			Code:    fiber.StatusUnprocessableEntity,
@@ -57,17 +57,24 @@ func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to convert min value to int")
 	}
-
 	maxim, err := strconv.Atoi(c.Params("max", "100"))
 	if err != nil {
 		return errors.Wrap(err, "failed to convert max value to int")
 	}
 
-	name := c.Params("documentName")
-
-	err = r.service.UploadFile(doc, minim, maxim, name)
-	if err != nil {
-		return errors.Wrap(err, "failed to upload file")
+	name := c.Params("name")
+	for _, v := range doc.File {
+		documentId, err := r.service.UploadDocument(minim, maxim, name)
+		if err != nil {
+			return errors.Wrap(err, "failed to upload document")
+		}
+		for i, vv := range v {
+			err = r.service.UploadPage(vv, *documentId, i)
+			if err != nil {
+				return errors.Wrap(err, "failed to upload file")
+			}
+		}
 	}
+
 	return nil
 }
