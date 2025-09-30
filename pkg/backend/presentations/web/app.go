@@ -20,14 +20,14 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app := fiber.New(fiber.Config{
 		Immutable:    true,
 		ErrorHandler: fiber_utils.ErrHandler(),
-		BodyLimit:    100000000,
+		BodyLimit:    10000000000,
 	})
 	app.Use(fiber_utils.MiddlewareLogger())
 	app.Use(recover2.New(recover2.Config{EnableStackTrace: true}))
 	app.Use(fiber_utils.MiddlewareCtxTimeout(29 * time.Second))
 
 	app.Post("/api/documents/:documentId/pages", r.getDocumentPages)
-	app.Post("/api/documents/get", r.getDocuments)
+	app.Get("/api/documents", r.getDocuments)
 
 	app.Post("/api/documents", r.uploadDocument)
 

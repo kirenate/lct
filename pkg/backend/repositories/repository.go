@@ -21,7 +21,9 @@ type Repository struct {
 }
 
 func NewRepository(minio *minio.Client, db *gorm.DB) *Repository {
-	return &Repository{minio: minio, db: db}
+	repository := &Repository{minio: minio, db: db}
+	repository.db.Raw("CREATE INDEX text_search ON document_metadata USING GIN (to_tsvector(name));")
+	return repository
 }
 
 func (r *Repository) CreateBucket(bucketName string) error {
@@ -153,4 +155,17 @@ func (r *Repository) SaveText(text *schemas.Text) error {
 	}
 
 	return nil
+}
+
+func (r *Repository) SearchDocuments(page, pageSize int, order, name string) (*[]schemas.DocumentMetadata, error) {
+	var docs *[]schemas.DocumentMetadata
+	err := r.db.Table("document_metadata").
+		Order("name "+order).
+		Offset(page*pageSize).
+		Limit(pageSize).
+		Find(&docs, "to_tsvector(name) @@ to_tsquery(?)", name).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find documents in db")
+	}
+	return docs, nil
 }

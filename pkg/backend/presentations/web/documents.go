@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"strconv"
 )
 
 func (r *Presentation) getDocumentPages(c *fiber.Ctx) error {
@@ -12,18 +11,20 @@ func (r *Presentation) getDocumentPages(c *fiber.Ctx) error {
 }
 
 func (r *Presentation) getDocuments(c *fiber.Ctx) error {
-	params := c.AllParams()
-	page, err := strconv.Atoi(params["page"])
-	if err != nil {
-		return errors.Wrap(err, "failed to convert param page to int")
-	}
-	pageSize, err := strconv.Atoi(params["pageSize"])
-	if err != nil {
-		return errors.Wrap(err, "failed to convert param pageSize to int")
-	}
+	page := c.QueryInt("page")
+	pageSize := c.QueryInt("pageSize")
+	sortBy := c.Query("sortBy", "name")
+	name := c.Query("query")
 	order := "DESC"
-	if params["sortBy"] == "-name" {
+	if sortBy == "-name" {
 		order = "ASC"
+	}
+	if name != "" {
+		docs, err := r.service.SearchDocuments(page, pageSize, order, name)
+		if err != nil {
+			return errors.Wrap(err, "failed to search documents")
+		}
+		return c.JSON(fiber.Map{"documents": docs})
 	}
 	docs, err := r.service.GetDocuments(page, pageSize, order)
 	if err != nil {
@@ -53,17 +54,12 @@ func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
 			Message: err.Error(),
 		}
 	}
-	minim, err := strconv.Atoi(c.Params("min", "0"))
-	if err != nil {
-		return errors.Wrap(err, "failed to convert min value to int")
+	minim := c.QueryInt("min", 0)
+	maxim := c.QueryInt("max", 100)
+	name := c.Query("name")
+	if name == "" {
+		return errors.New("document must have a name")
 	}
-	maxim, err := strconv.Atoi(c.Params("max", "100"))
-	if err != nil {
-		return errors.Wrap(err, "failed to convert max value to int")
-	}
-
-	name := c.Params("name")
-
 	for _, v := range doc.File {
 		documentId, err := r.service.UploadDocument(minim, maxim, name)
 		if err != nil {

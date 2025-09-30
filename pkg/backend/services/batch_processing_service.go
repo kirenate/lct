@@ -92,3 +92,11 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 
 	return nil
 }
+
+func (r *Service) SearchDocuments(page, pageSize int, order, name string) (*[]schemas.DocumentMetadata, error) {
+	docs, err := r.repository.SearchDocuments(page, pageSize, order, name)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to search documents")
+	}
+	return docs, nil
+}
