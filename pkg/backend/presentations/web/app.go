@@ -27,8 +27,8 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app.Use(fiber_utils.MiddlewareCtxTimeout(29 * time.Second))
 
 	app.Post("/api/documents/:documentId/pages", r.getDocumentPages)
-	app.Get("/api/documents", r.getDocuments)
 
+	app.Get("/api/documents", r.getDocuments)
 	app.Post("/api/documents", r.uploadDocument)
 
 	app.Delete("/api/:documentId", r.deleteDocument)
