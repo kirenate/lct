@@ -10,8 +10,8 @@ RUN go mod download
 
 # Copy the rest of the source code
 COPY . .
-GO ?= GO111MODULE=on CGO_ENABLED=1 go
-RUN $(GO) build -o=bootstrap main.go
+
+RUN GO ?= GO111MODULE=on CGO_ENABLED=1 go build -o=bootstrap main.go
 
 ## Now copy it into our base image.
 FROM debian:trixie
