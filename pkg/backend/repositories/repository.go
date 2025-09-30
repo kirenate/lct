@@ -24,6 +24,22 @@ func NewRepository(minio *minio.Client, db *gorm.DB) *Repository {
 	return &Repository{minio: minio, db: db}
 }
 
+func (r *Repository) CreateBucket(bucketName string) error {
+	if ok, err := r.minio.BucketExists(bucketName); ok {
+		if err != nil {
+			return errors.Wrap(err, "failed to check if bucket exists")
+		}
+
+		return nil
+	}
+	err := r.minio.MakeBucket(bucketName, "")
+	if err != nil {
+		return errors.Wrap(err, "failed to create bucket")
+	}
+
+	return nil
+}
+
 func (r *Repository) GetDocuments(page, pageSize int, order string) ([]schemas.DocumentMetadata, error) {
 	var docs *[]schemas.DocumentMetadata
 	err := r.db.Table("document_metadata").
@@ -71,8 +87,16 @@ func (r *Repository) DeleteDocument(documentId uuid.UUID) error {
 	return nil
 }
 
-func (r *Repository) SaveToMinio(doc *multipart.FileHeader, uid uuid.UUID, contents multipart.File) error {
-	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, uid.String()+".png", contents, doc.Size, minio.PutObjectOptions{})
+func (r *Repository) SaveToMinio(doc *multipart.FileHeader, uid uuid.UUID, contents multipart.File, path string) error {
+
+	var objName string
+	if path != "" {
+		objName = path + "/" + uid.String() + ".png"
+	} else {
+		objName = uid.String() + ".png"
+	}
+	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, objName,
+		contents, doc.Size, minio.PutObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to put object in minio")
 	}
@@ -99,11 +123,33 @@ func (r *Repository) SavePageToPg(page *schemas.PageMetadata) error {
 }
 
 func (r *Repository) CreateFolder(folderName string) error {
+	if folderName == "" {
+		return nil
+	}
 	var b []byte
 	reader := bytes.NewReader(b)
-	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, folderName+"/", reader, 0, minio.PutObjectOptions{})
+	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, folderName+"/",
+		reader, 0, minio.PutObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to create folder in minio")
+	}
+
+	return nil
+}
+
+func (r *Repository) SaveAttribute(attr *schemas.Attribute) error {
+	err := r.db.Table("attribute").Save(&attr).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to save attribute")
+	}
+
+	return nil
+}
+
+func (r *Repository) SaveText(text *schemas.Text) error {
+	err := r.db.Table("text").Save(&text).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to save text")
 	}
 
 	return nil

@@ -20,6 +20,7 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app := fiber.New(fiber.Config{
 		Immutable:    true,
 		ErrorHandler: fiber_utils.ErrHandler(),
+		BodyLimit:    100000000,
 	})
 	app.Use(fiber_utils.MiddlewareLogger())
 	app.Use(recover2.New(recover2.Config{EnableStackTrace: true}))

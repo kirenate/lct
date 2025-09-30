@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"main.go/presentations/web"
+	"main.go/repositories"
 	"main.go/schemas"
 	"main.go/services"
 	"main.go/utils/settings_utils"
@@ -16,7 +17,7 @@ import (
 
 func main() {
 	minio, err := minio2.New(settings_utils.Settings.MinioEndpoint, settings_utils.Settings.MinioAccessKeyID,
-		settings_utils.Settings.MinioSecretAccessKey, true)
+		settings_utils.Settings.MinioSecretAccessKey, false)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to initiate minio client"))
 	}
@@ -36,7 +37,12 @@ func main() {
 		panic(errors.Wrap(err, "failed to merge database"))
 	}
 
-	service := services.NewService(minio, db)
+	repository := repositories.NewRepository(minio, db)
+	service, err := services.NewService(repository)
+	if err != nil {
+		panic(errors.Wrap(err, "failed to initialize service"))
+	}
+
 	presentation := web.NewPresentation(service)
 
 	app := presentation.BuildApp()

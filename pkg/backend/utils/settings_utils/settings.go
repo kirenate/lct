@@ -7,7 +7,7 @@ import (
 type settings struct {
 	MinioAccessKeyID     string `env:"MINIO_ACCESS_KEY_ID"`
 	MinioSecretAccessKey string `env:"MINIO_SECRET_ACCESS_KEY"`
-	MinioEndpoint        string `env:"MINIO_ENDPOINT"      envDefault:"localhost:9000"`
+	MinioEndpoint        string `env:"MINIO_ENDPOINT"      envDefault:"0.0.0.0:9000"`
 	MinioBucketName      string `env:"MINIO_BUCKET_NAME"   envDefault:"scans"`
 
 	PgDb       string `env:"PG_DB"`

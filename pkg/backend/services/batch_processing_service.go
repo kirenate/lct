@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"main.go/repositories"
 	"main.go/schemas"
+	"main.go/utils/settings_utils"
 	"mime/multipart"
 	"time"
 )
@@ -13,8 +14,13 @@ type Service struct {
 	repository *repositories.Repository
 }
 
-func NewService(repository *repositories.Repository) *Service {
-	return &Service{repository: repository}
+func NewService(repository *repositories.Repository) (*Service, error) {
+	service := &Service{repository: repository}
+	err := service.repository.CreateBucket(settings_utils.Settings.MinioBucketName)
+	if err != nil {
+		return nil, err
+	}
+	return &Service{repository: repository}, nil
 }
 
 func (r *Service) GetDocuments(page int, pageSize int, order string) ([]schemas.DocumentMetadata, error) {
@@ -51,10 +57,16 @@ func (r *Service) UploadDocument(minim, maxim int, name string) (*uuid.UUID, err
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to save document to postgres")
 	}
+
+	err = r.repository.CreateFolder(name)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create folder")
+	}
+
 	return &uid, nil
 }
 
-func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, number int) error {
+func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, number int, path string) error {
 	uid := uuid.New()
 
 	contents, err := doc.Open()
@@ -67,11 +79,9 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		Thumb:      "",
 		Original:   "",
 		Number:     number,
-		FullText:   nil,
-		Attributes: nil,
 	}
 
-	err = r.repository.SaveToMinio(doc, uid, contents)
+	err = r.repository.SaveToMinio(doc, uid, contents, path)
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to minio")
 	}

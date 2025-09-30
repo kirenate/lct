@@ -34,8 +34,6 @@ type PageMetadata struct {
 	Thumb      string
 	Original   string
 	Number     int
-	FullText   []Text
-	Attributes []Attribute
 }
 
 type Page struct {
