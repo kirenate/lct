@@ -17,7 +17,7 @@ import (
 
 func main() {
 	minio, err := minio2.New(settings_utils.Settings.MinioEndpoint, settings_utils.Settings.MinioAccessKeyID,
-		settings_utils.Settings.MinioSecretAccessKey, false)
+		settings_utils.Settings.MinioSecretAccessKey, true)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to initiate minio client"))
 	}
