@@ -3,7 +3,7 @@ FROM golang:1.24-bullseye AS build
 WORKDIR /src
 
 # Copy only dependency files first
-COPY go.mod go.sum ./
+COPY backend/go.mod backend/go.sum ./
 
 # Download dependencies
 RUN go mod download
