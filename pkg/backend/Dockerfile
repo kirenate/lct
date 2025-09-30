@@ -11,7 +11,7 @@ RUN go mod download
 # Copy the rest of the source code
 COPY . .
 
-RUN GO111MODULE=on CGO_ENABLED=1 go build -o=bootstrap backend/main.go
+RUN cd backend &&  GO111MODULE=on CGO_ENABLED=1 go build -o=bootstrap main.go
 
 ## Now copy it into our base image.
 FROM debian:trixie
