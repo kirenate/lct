@@ -51,7 +51,7 @@ services:
 
 
   postgres:
-    image: ankane/pgvector:v0.3.1
+    image: postgres:16.2-alpine3.19
     environment:
       POSTGRES_DB: db_main
       POSTGRES_USER: db_main
