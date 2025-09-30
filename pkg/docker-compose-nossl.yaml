@@ -1,14 +1,24 @@
 services:
   backend:
     restart: always
+    environment:
+      _UVICORN__HOST: "0.0.0.0"
+      _UVICORN__PORT: 8000
+      _UVICORN__LOG_LEVEL: "DEBUG"
+      _REDIS__HOST: "redis"
+      _PG__HOST: "postgres"
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: backend
+      dockerfile: backend/Dockerfile
+    depends_on:
+      - postgres
     volumes:
-      - ".data:/.data"
-      - ".env:/.env"
-    ports:
-      - '8081:8081'
+      - "./backend/.env:/app/.env"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.00'
+          memory: 10000M
 
   nginx:
     image: nginx:1.25.4-alpine
@@ -18,11 +28,9 @@ services:
       - "8000:8000"
     depends_on:
       - backend
-#      - frontend
     volumes:
-      - ./nginx/ssl_nginx.conf:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt:/etc/letsencrypt
-      - /data/letsencrypt:/data/letsencrypt
+      - ./nginx/raw_nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/:/frontend
 
   minio:
     image: elestio/minio:latest
@@ -41,10 +49,9 @@ services:
       - MINIO_SERVER_URL=http://127.0.0.1:9000
     command: server --address ":9000" --console-address ":9001" /data
 
+
   postgres:
-    # image: ankane/pgvector:v0.3.1
-    # image: postgis/postgis/13-3.1-alpine
-    image: postgres:16.2-alpine3.19
+    image: ankane/pgvector:v0.3.1
     environment:
       POSTGRES_DB: db_main
       POSTGRES_USER: db_main
@@ -71,3 +78,14 @@ services:
         limits:
           cpus: '2.00'
           memory: 4000M
+
+  autoheal:
+    restart: always
+    image: willfarrell/autoheal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 100M
