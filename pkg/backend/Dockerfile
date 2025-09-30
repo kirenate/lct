@@ -22,6 +22,6 @@ RUN rm -rf /var/lib/apt/lists/* \
 RUN update-ca-certificates
 RUN rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /src/bootstrap /
+COPY --from=build /src/backend/bootstrap /
 
 CMD ["/bootstrap"]
