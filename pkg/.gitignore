@@ -8,6 +8,7 @@ backend/.env
 backend/.data
 backend/data
 backend/volumes
+backend/extra
 
 ### SAM BUILD ###
 **/.aws-sam
