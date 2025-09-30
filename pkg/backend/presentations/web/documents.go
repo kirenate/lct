@@ -15,12 +15,13 @@ func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 	pageSize := c.QueryInt("pageSize")
 	sortBy := c.Query("sortBy", "name")
 	name := c.Query("query")
+	status := c.Query("status")
 	order := "DESC"
 	if sortBy == "-name" {
 		order = "ASC"
 	}
-	if name != "" {
-		docs, err := r.service.SearchDocuments(page, pageSize, order, name)
+	if name != "" || status != "" {
+		docs, err := r.service.SearchDocuments(page, pageSize, order, name, status)
 		if err != nil {
 			return errors.Wrap(err, "failed to search documents")
 		}
@@ -30,7 +31,7 @@ func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get documents")
 	}
-	return c.JSON(fiber.Map{"documents": docs})
+	return c.JSON(fiber.Map{"documents": docs, "documentsLoaded": len(docs)})
 }
 
 func (r *Presentation) deleteDocument(c *fiber.Ctx) error {

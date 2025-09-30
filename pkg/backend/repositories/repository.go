@@ -157,13 +157,21 @@ func (r *Repository) SaveText(text *schemas.Text) error {
 	return nil
 }
 
-func (r *Repository) SearchDocuments(page, pageSize int, order, name string) (*[]schemas.DocumentMetadata, error) {
+func (r *Repository) SearchDocuments(page, pageSize int, order, name, status string) (*[]schemas.DocumentMetadata, error) {
 	var docs *[]schemas.DocumentMetadata
-	err := r.db.Table("document_metadata").
-		Order("name "+order).
-		Offset(page*pageSize).
-		Limit(pageSize).
-		Find(&docs, "to_tsvector(name) @@ to_tsquery(?)", name).Error
+
+	stmp := r.db.Table("document_metadata").Order("name " + order).
+		Offset(page * pageSize).
+		Limit(pageSize)
+
+	if status != "" {
+		stmp = stmp.Where("status = ?", status)
+	}
+	if name != "" {
+		stmp = stmp.Where("to_tsvector(name) @@ to_tsquery(?)", name)
+	}
+
+	err := stmp.Find(&docs).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find documents in db")
 	}
