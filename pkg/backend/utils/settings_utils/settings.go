@@ -9,6 +9,7 @@ type settings struct {
 	MinioSecretAccessKey string `env:"MINIO_SECRET_ACCESS_KEY"`
 	MinioEndpoint        string `env:"MINIO_ENDPOINT"      envDefault:"0.0.0.0:9000"`
 	MinioBucketName      string `env:"MINIO_BUCKET_NAME"   envDefault:"scans"`
+	MinioSecure          bool   `env:"MINIO_SECURE" envDefault:"false"`
 
 	PgDb       string `env:"PG_DB"`
 	PgHost     string `env:"PG_HOST"`
