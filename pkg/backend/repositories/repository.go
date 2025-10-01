@@ -62,22 +62,22 @@ func (r *Repository) DeleteDocument(documentId uuid.UUID) error {
 			return errors.Wrap(err, "failed to delete document from minio")
 		}
 
-		err = tx.Table("document_metadata").Delete("WHERE id = (?)", documentId).Error
+		err = tx.Table("document_metadata").Where("id", documentId).Delete(&schemas.DocumentMetadata{}, documentId).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to delete document metadata")
 		}
 
-		err = tx.Table("page_metadata").Delete("WHERE document_id = (?)", documentId).Error
+		err = tx.Table("page_metadata").Where("document_id", documentId).Delete(&schemas.PageMetadata{}, documentId).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to delete pages metadata")
 		}
 
-		err = tx.Table("attribute").Delete("WHERE document_id = (?)", documentId).Error
+		err = tx.Table("attribute").Where("document_id", documentId).Delete(&schemas.Attribute{}, documentId).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to delete attributes")
 		}
 
-		err = tx.Table("text").Delete("WHERE document_id = (?)", documentId).Error
+		err = tx.Table("text").Where("document_id", documentId).Delete(&schemas.Text{}, documentId).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to delete text")
 		}
