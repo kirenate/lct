@@ -38,7 +38,10 @@ func main() {
 	}
 
 	repository := repositories.NewRepository(minio, db)
-	service := services.NewService(repository)
+	service, err := services.NewService(repository)
+	if err != nil {
+		panic(errors.Wrap(err, "failed to initialize service"))
+	}
 	presentation := web.NewPresentation(service)
 
 	app := presentation.BuildApp()
