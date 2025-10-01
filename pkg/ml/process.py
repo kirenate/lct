@@ -56,15 +56,14 @@ class OCR:
         img, _ = self._preprocess_image(raw_image)
         logger.info(f"image.reshaped {img.shape=}")
 
-        result = self._ocr.predict(img)  # это уже для каждого файла вызывается
+        result = self._ocr.ocr(img)  # это уже для каждого файла вызывается
+        logger.info(f"image.processed elapsed={time.monotonic() - t0:2f}f ")
+
         for res in result:
             res.print()
             res.save_to_img("output")
             res.save_to_json("output")
 
-        result[0]["rec_polys"]  # массив с полигонами
-        result[0]["rec_texts"]  # массив строк полученных
-        result[0]["rec_scores"]  # массив со значениями уверенности для каждой строки
         logger.info(
             f"image.processed elapsed={time.monotonic() - t0:2f}f "
             f"{result[0]["rec_polys"]}, "

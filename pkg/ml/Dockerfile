@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.12-slim
 
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
@@ -8,7 +8,7 @@ ENV PYTHONFAULTHANDLER=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 RUN apt-get update && \
-    apt-get install -y gcc python3-dev curl && \
+    apt-get install -y gcc python3-dev ffmpeg libsm6 libxext6 libgl1 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
