@@ -25,13 +25,13 @@ func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to search documents")
 		}
-		return c.JSON(fiber.Map{"documents": *docs, "documentsLoaded": len(*docs)})
+		return c.JSON(fiber.Map{"data": *docs, "total": len(*docs)})
 	}
 	docs, err := r.service.GetDocuments(page, pageSize, order)
 	if err != nil {
 		return errors.Wrap(err, "failed to get documents")
 	}
-	return c.JSON(fiber.Map{"documents": docs, "documentsLoaded": len(docs)})
+	return c.JSON(fiber.Map{"data": docs, "total": len(docs)})
 }
 
 func (r *Presentation) deleteDocument(c *fiber.Ctx) error {
