@@ -37,18 +37,14 @@ func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 	sortBy := c.Query("sortBy", "name")
 	name := c.Query("query")
 	status := c.Query("status")
-	order := "DESC"
-	if sortBy == "-name" {
-		order = "ASC"
-	}
 	if name != "" || status != "" {
-		docs, err := r.service.SearchDocuments(page, pageSize, order, name, status)
+		docs, err := r.service.SearchDocuments(page, pageSize, sortBy, name, status)
 		if err != nil {
 			return errors.Wrap(err, "failed to search documents")
 		}
 		return c.JSON(fiber.Map{"data": *docs, "total": len(*docs)})
 	}
-	docs, err := r.service.GetDocuments(page, pageSize, order)
+	docs, err := r.service.GetDocuments(page, pageSize, sortBy)
 	if err != nil {
 		return errors.Wrap(err, "failed to get documents")
 	}
