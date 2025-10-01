@@ -30,6 +30,9 @@ func (r *Service) GetDocuments(page int, pageSize int, sortBy string) ([]schemas
 	if ok {
 		order = "ASC"
 	}
+	if sorting == "createdAt" {
+		sorting = "created_at"
+	}
 	docs, err := r.repository.GetDocuments(page, pageSize, order, sorting)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get documents")
@@ -105,6 +108,9 @@ func (r *Service) SearchDocuments(page, pageSize int, sortBy, name, status strin
 	sorting, ok := strings.CutPrefix(sortBy, "-")
 	if ok {
 		order = "ASC"
+	}
+	if sorting == "createdAt" {
+		sorting = "created_at"
 	}
 	docs, err := r.repository.SearchDocuments(page, pageSize, order, name, status, sorting)
 	if err != nil {

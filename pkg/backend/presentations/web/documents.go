@@ -28,6 +28,10 @@ func (r *Presentation) getSingleDocument(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to find document")
 	}
 
+	if doc.Name != "" {
+		doc.Name = strings.ToTitle(doc.Name)
+	}
+
 	return c.JSON(fiber.Map{"data": doc})
 }
 
@@ -47,6 +51,12 @@ func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 	docs, err := r.service.GetDocuments(page, pageSize, sortBy)
 	if err != nil {
 		return errors.Wrap(err, "failed to get documents")
+	}
+
+	for i := range docs {
+		if docs[i].Name != "" {
+			docs[i].Name = strings.ToTitle(docs[i].Name)
+		}
 	}
 	return c.JSON(fiber.Map{"data": docs, "total": len(docs)})
 }
@@ -79,6 +89,7 @@ func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
 	if name == "" {
 		return errors.New("document must have a name")
 	}
+	name = strings.ToLower(name)
 	for _, v := range doc.File {
 		documentId, err := r.service.UploadDocument(minim, maxim, name, code)
 		if err != nil {
