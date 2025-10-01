@@ -14,9 +14,9 @@ type Service struct {
 	repository *repositories.Repository
 }
 
-func NewService(repository *repositories.Repository) (*Service, error) {
+func NewService(repository *repositories.Repository) *Service {
 	service := &Service{repository: repository}
-	return service, nil
+	return service
 }
 
 func (r *Service) CreateBucket() error {
