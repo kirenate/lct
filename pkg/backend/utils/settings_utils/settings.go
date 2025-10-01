@@ -18,7 +18,7 @@ type settings struct {
 	PgPassword string `env:"PG_PASSWORD"`
 
 	TLS      bool   `env:"TLS"                             envDefault:"false"`
-	URL      string `env:"URL"                             envDefault:"0.0.0.0:8081"`
+	URL      string `env:"URL"                             envDefault:"0.0.0.0:8080"`
 	CertFile string `env:"SSL_CERTFILE"                       envDefault:"./.data/cert.pem"`
 	KeyFile  string `env:"SSL_KEYFILE"                        envDefault:"./.data/cert.key"`
 }
