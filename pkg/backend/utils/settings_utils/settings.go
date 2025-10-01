@@ -12,7 +12,7 @@ type settings struct {
 	MinioSecure          bool   `env:"MINIO_SECURE" envDefault:"false"`
 
 	PgDb       string `env:"PG_DB"`
-	PgHost     string `env:"PG_HOST"`
+	PgHost     string `env:"PG_HOST" envDefault:"localhost"`
 	PgPort     int    `env:"PG_PORT"`
 	PgUsername string `env:"PG_USERNAME"`
 	PgPassword string `env:"PG_PASSWORD"`
