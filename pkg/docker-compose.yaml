@@ -38,8 +38,8 @@ services:
     environment:
       - MINIO_ROOT_USER=minio-root-user
       - MINIO_ROOT_PASSWORD=minio-root-password
-      - MINIO_BROWSER_REDIRECT_URL=http://127.0.0.1:9001
-      - MINIO_SERVER_URL=http://127.0.0.1:9000
+      - MINIO_BROWSER_REDIRECT_URL=https://127.0.0.1:9001
+      - MINIO_SERVER_URL=https://127.0.0.1:9000
     command: server --address ":9000" --console-address ":9001" /data
 
   postgres:
