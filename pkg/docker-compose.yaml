@@ -9,6 +9,16 @@ services:
       - "./backend/.env:/.env"
       - "/etc/letsencrypt:/etc/letsencrypt"
 
+  ml:
+    restart: always
+    build:
+      context: ml
+      dockerfile: Dockerfile
+    volumes:
+      - ".data:/.data"
+    ports:
+      - "8081:8080"
+
   nginx:
     image: nginx:1.25.4-alpine
     ports:
