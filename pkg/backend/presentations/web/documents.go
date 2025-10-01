@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 func (r *Presentation) getDocumentPages(c *fiber.Ctx) error {
@@ -11,7 +12,9 @@ func (r *Presentation) getDocumentPages(c *fiber.Ctx) error {
 }
 
 func (r *Presentation) getSingleDocument(c *fiber.Ctx) error {
-	idStr := c.Query("documentId")
+	path := c.Path()
+	l := strings.Split(path, "/")
+	idStr := l[len(l)-1]
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		return &fiber.Error{
