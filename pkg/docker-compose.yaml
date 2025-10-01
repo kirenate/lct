@@ -8,15 +8,12 @@ services:
       - ".data:/.data"
       - "./backend/.env:/.env"
       - "/etc/letsencrypt:/etc/letsencrypt"
-    ports:
-      - '8081:8081'
 
   nginx:
     image: nginx:1.25.4-alpine
     ports:
       - "80:80"
       - "443:443"
-      - "8000:8000"
     depends_on:
       - backend
 #      - frontend
