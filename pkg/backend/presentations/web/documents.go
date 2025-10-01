@@ -58,11 +58,12 @@ func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
 	minim := c.QueryInt("min", 0)
 	maxim := c.QueryInt("max", 100)
 	name := c.Query("name")
+	code := c.Query("code")
 	if name == "" {
 		return errors.New("document must have a name")
 	}
 	for _, v := range doc.File {
-		documentId, err := r.service.UploadDocument(minim, maxim, name)
+		documentId, err := r.service.UploadDocument(minim, maxim, name, code)
 		if err != nil {
 			return errors.Wrap(err, "failed to upload document")
 		}

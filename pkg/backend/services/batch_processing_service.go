@@ -40,13 +40,14 @@ func (r *Service) DeleteDocument(documentId uuid.UUID) error {
 	return nil
 }
 
-func (r *Service) UploadDocument(minim, maxim int, name string) (*uuid.UUID, error) {
+func (r *Service) UploadDocument(minim, maxim int, name, code string) (*uuid.UUID, error) {
 	uid := uuid.New()
 
 	now := time.Now().UTC()
 	document := &schemas.DocumentMetadata{
 		ID:        uid,
 		Name:      name,
+		Code:      code,
 		Status:    repositories.StatusProcessing,
 		Progress:  0,
 		Min:       minim,
