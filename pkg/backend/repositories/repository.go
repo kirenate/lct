@@ -42,10 +42,10 @@ func (r *Repository) CreateBucket(bucketName string) error {
 	return nil
 }
 
-func (r *Repository) GetDocuments(page, pageSize int, order string) ([]schemas.DocumentMetadata, error) {
+func (r *Repository) GetDocuments(page, pageSize int, order, sorting string) ([]schemas.DocumentMetadata, error) {
 	var docs *[]schemas.DocumentMetadata
 	err := r.db.Table("document_metadata").
-		Order("name " + order).
+		Order(sorting + " " + order).
 		Offset(page * pageSize).
 		Limit(pageSize).
 		Find(&docs).Error
@@ -157,10 +157,10 @@ func (r *Repository) SaveText(text *schemas.Text) error {
 	return nil
 }
 
-func (r *Repository) SearchDocuments(page, pageSize int, order, name, status string) (*[]schemas.DocumentMetadata, error) {
+func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, sorting string) (*[]schemas.DocumentMetadata, error) {
 	var docs *[]schemas.DocumentMetadata
 
-	stmp := r.db.Table("document_metadata").Order("name " + order).
+	stmp := r.db.Table("document_metadata").Order(sorting + " " + order).
 		Offset(page * pageSize).
 		Limit(pageSize)
 
@@ -184,6 +184,6 @@ func (r *Repository) GetDocumentById(id uuid.UUID) (*schemas.DocumentMetadata, e
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find document by id")
 	}
-	
+
 	return doc, nil
 }

@@ -7,6 +7,7 @@ import (
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
+	"strings"
 	"time"
 )
 
@@ -23,8 +24,13 @@ func NewService(repository *repositories.Repository) (*Service, error) {
 	return service, nil
 }
 
-func (r *Service) GetDocuments(page int, pageSize int, order string) ([]schemas.DocumentMetadata, error) {
-	docs, err := r.repository.GetDocuments(page, pageSize, order)
+func (r *Service) GetDocuments(page int, pageSize int, sortBy string) ([]schemas.DocumentMetadata, error) {
+	order := "DESC"
+	sorting, ok := strings.CutPrefix(sortBy, "-")
+	if ok {
+		order = "ASC"
+	}
+	docs, err := r.repository.GetDocuments(page, pageSize, order, sorting)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get documents")
 	}
@@ -94,8 +100,13 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	return nil
 }
 
-func (r *Service) SearchDocuments(page, pageSize int, order, name, status string) (*[]schemas.DocumentMetadata, error) {
-	docs, err := r.repository.SearchDocuments(page, pageSize, order, name, status)
+func (r *Service) SearchDocuments(page, pageSize int, sortBy, name, status string) (*[]schemas.DocumentMetadata, error) {
+	order := "DESC"
+	sorting, ok := strings.CutPrefix(sortBy, "-")
+	if ok {
+		order = "ASC"
+	}
+	docs, err := r.repository.SearchDocuments(page, pageSize, order, name, status, sorting)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to search documents")
 	}
