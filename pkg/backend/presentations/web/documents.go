@@ -89,7 +89,6 @@ func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
 	if name == "" {
 		return errors.New("document must have a name")
 	}
-	name = strings.ToLower(name)
 	for _, v := range doc.File {
 		documentId, err := r.service.UploadDocument(minim, maxim, name, code)
 		if err != nil {

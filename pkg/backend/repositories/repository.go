@@ -9,6 +9,7 @@ import (
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
+	"unicode"
 )
 
 var StatusProcessing = "processing"
@@ -168,6 +169,17 @@ func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, so
 		stmp = stmp.Where("status = ?", status)
 	}
 	if name != "" {
+		for _, v := range name {
+			if unicode.Is(unicode.Cyrillic, v) {
+				stmp = stmp.Where("to_tsvector(name) @@ to_tsquery('russian', ?)", name)
+				err := stmp.Find(&docs).Error
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to find documents in db")
+				}
+				return docs, nil
+			}
+
+		}
 		stmp = stmp.Where("to_tsvector(name) @@ to_tsquery(?)", name)
 	}
 
