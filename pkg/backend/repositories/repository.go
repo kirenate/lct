@@ -177,3 +177,13 @@ func (r *Repository) SearchDocuments(page, pageSize int, order, name, status str
 	}
 	return docs, nil
 }
+
+func (r *Repository) GetDocumentById(id uuid.UUID) (*schemas.DocumentMetadata, error) {
+	var doc *schemas.DocumentMetadata
+	err := r.db.Table("document_metadata").Where("id", id).Find(&doc).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find document by id")
+	}
+	
+	return doc, nil
+}

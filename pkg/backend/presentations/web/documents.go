@@ -10,6 +10,24 @@ func (r *Presentation) getDocumentPages(c *fiber.Ctx) error {
 	return nil
 }
 
+func (r *Presentation) getSingleDocument(c *fiber.Ctx) error {
+	idStr := c.Query("documentId")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return &fiber.Error{
+			Code:    fiber.StatusUnprocessableEntity,
+			Message: err.Error(),
+		}
+	}
+
+	doc, err := r.service.GetSingleDocument(id)
+	if err != nil {
+		return errors.Wrap(err, "failed to find document")
+	}
+
+	return c.JSON(fiber.Map{"data": doc})
+}
+
 func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 	page := c.QueryInt("page")
 	pageSize := c.QueryInt("pageSize")

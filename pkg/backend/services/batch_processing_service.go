@@ -101,3 +101,12 @@ func (r *Service) SearchDocuments(page, pageSize int, order, name, status string
 	}
 	return docs, nil
 }
+
+func (r *Service) GetSingleDocument(id uuid.UUID) (*schemas.DocumentMetadata, error) {
+	doc, err := r.repository.GetDocumentById(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to retrieve document")
+	}
+
+	return doc, nil
+}

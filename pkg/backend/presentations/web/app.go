@@ -28,6 +28,7 @@ func (r *Presentation) BuildApp() *fiber.App {
 
 	app.Post("/api/documents/:documentId/pages", r.getDocumentPages)
 
+	app.Get("/api/documents/:documentId", r.getSingleDocument)
 	app.Get("/api/documents", r.getDocuments)
 	app.Post("/api/documents", r.uploadDocument)
 
