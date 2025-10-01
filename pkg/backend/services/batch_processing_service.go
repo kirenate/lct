@@ -14,17 +14,13 @@ type Service struct {
 	repository *repositories.Repository
 }
 
-func NewService(repository *repositories.Repository) *Service {
+func NewService(repository *repositories.Repository) (*Service, error) {
 	service := &Service{repository: repository}
-	return service
-}
-
-func (r *Service) CreateBucket() error {
-	err := r.repository.CreateBucket(settings_utils.Settings.MinioBucketName)
+	err := service.repository.CreateBucket(settings_utils.Settings.MinioBucketName)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to create bucket")
 	}
-	return nil
+	return service, nil
 }
 
 func (r *Service) GetDocuments(page int, pageSize int, order string) ([]schemas.DocumentMetadata, error) {
