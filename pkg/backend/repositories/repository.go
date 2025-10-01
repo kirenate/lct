@@ -9,6 +9,7 @@ import (
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
+	"strings"
 	"unicode"
 )
 
@@ -169,6 +170,7 @@ func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, so
 		stmp = stmp.Where("status = ?", status)
 	}
 	if name != "" {
+		name = strings.ReplaceAll(name, " ", ":* & ")
 		if checkCyrillic(name) {
 			stmp = stmp.Where("to_tsvector(name) @@ plainto_tsquery('russian', ?)", name)
 		} else {
