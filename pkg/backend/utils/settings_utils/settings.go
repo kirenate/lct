@@ -18,8 +18,8 @@ type settings struct {
 
 	TLS      bool   `env:"TLS"                             envDefault:"false"`
 	URL      string `env:"URL"                             envDefault:"0.0.0.0:8081"`
-	CertFile string `env:"CERT_FILE"                       envDefault:"./.data/cert.pem"`
-	KeyFile  string `env:"KEY_FILE"                        envDefault:"./.data/cert.key"`
+	CertFile string `env:"SSL_CERTFILE"                       envDefault:"./.data/cert.pem"`
+	KeyFile  string `env:"SSL_KEYFILE"                        envDefault:"./.data/cert.key"`
 }
 
 var Settings = settings_utils.MustGetSetting[settings]("LCT_") //nolint:gochecknoglobals // required
