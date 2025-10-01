@@ -39,11 +39,6 @@ func main() {
 
 	repository := repositories.NewRepository(minio, db)
 	service := services.NewService(repository)
-	err = service.CreateBucket()
-	if err != nil {
-		panic(errors.Wrap(err, "failed to initialize service"))
-	}
-
 	presentation := web.NewPresentation(service)
 
 	app := presentation.BuildApp()
