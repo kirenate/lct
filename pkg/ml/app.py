@@ -1,13 +1,15 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
+from process import OCR
 
 
 def create_app() -> FastAPI:
     app = FastAPI()
+    ocr = OCR()
 
     @app.post("/process")
-    def process() -> None:
-        return None
+    async def process(image: UploadFile) -> None:
+        ocr.predict(await image.read())
 
     return app
 
