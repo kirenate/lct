@@ -25,7 +25,7 @@ func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to search documents")
 		}
-		return c.JSON(fiber.Map{"documents": docs})
+		return c.JSON(fiber.Map{"documents": *docs, "documentsLoaded": len(*docs)})
 	}
 	docs, err := r.service.GetDocuments(page, pageSize, order)
 	if err != nil {
