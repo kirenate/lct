@@ -96,13 +96,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		return errors.Wrap(err, "getting link to original")
 	}
 
-	var img []byte
-	_, err = contents.Read(img)
-	if err != nil && !errors.Is(err, io.EOF) {
-		return errors.Wrap(err, "failed to read img")
-	}
-	buf := bytes.NewReader(img)
-	processedImg, err := compressImage(buf)
+	processedImg, err := compressImage(contents)
 	if err != nil {
 		return errors.Wrap(err, "failed to compress image")
 	}
