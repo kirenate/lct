@@ -2,9 +2,10 @@ package services
 
 import (
 	"bytes"
-	"github.com/cshum/vipsgen/vips"
+	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"io"
 	"main.go/repositories"
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
@@ -100,9 +101,10 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	if err != nil {
 		return errors.Wrap(err, "failed to read img")
 	}
-	processedImg, err := imageProcessing(img)
-	buf := bytes.NewReader(processedImg)
-	err = r.repository.SaveThumbToMinio(buf, path+"_thumb.png")
+	buf := bytes.NewReader(img)
+	processedImg, err := compressImage(buf)
+
+	err = r.repository.SaveThumbToMinio(processedImg, path+"_thumb.png")
 	if err != nil {
 		return errors.Wrap(err, "failed to save thumbnail in minio")
 	}
@@ -152,16 +154,34 @@ func (r *Service) GetSingleDocument(id uuid.UUID) (*schemas.DocumentMetadata, er
 	return doc, nil
 }
 
-func imageProcessing(img []byte) ([]byte, error) {
-	buf, err := vips.NewThumbnailBuffer(img, 600, &vips.ThumbnailBufferOptions{Height: 600})
+//
+//func imageProcessing(img []byte) ([]byte, error) {
+//	buf, err := vips.NewThumbnailBuffer(img, 600, &vips.ThumbnailBufferOptions{Height: 600})
+//	if err != nil {
+//		return []byte{}, errors.Wrap(err, "failed to create thumbnail")
+//	}
+//
+//	image, err := buf.PngsaveBuffer(nil)
+//	if err != nil {
+//		return []byte{}, errors.Wrap(err, "failed to export img")
+//	}
+//
+//	return image, nil
+//}
+
+func compressImage(buf io.Reader) (*bytes.Buffer, error) {
+	img, err := imaging.Decode(buf)
 	if err != nil {
-		return []byte{}, errors.Wrap(err, "failed to create thumbnail")
+		return nil, errors.Wrap(err, "failed to decode image")
 	}
 
-	image, err := buf.PngsaveBuffer(nil)
+	img = imaging.Resize(img, 128, 128, imaging.Lanczos)
+
+	buffer := new(bytes.Buffer)
+	err = imaging.Encode(buffer, img, imaging.PNG)
 	if err != nil {
-		return []byte{}, errors.Wrap(err, "failed to export img")
+		return nil, errors.Wrap(err, "failed to encode image")
 	}
 
-	return image, nil
+	return buffer, nil
 }

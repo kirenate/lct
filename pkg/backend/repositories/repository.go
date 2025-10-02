@@ -199,9 +199,9 @@ func (r *Repository) GetOriginalLink(name string) (*url.URL, error) {
 	return u, nil
 }
 
-func (r *Repository) SaveThumbToMinio(img *bytes.Reader, name string) error {
+func (r *Repository) SaveThumbToMinio(img *bytes.Buffer, name string) error {
 	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, name,
-		img, img.Size(), minio.PutObjectOptions{})
+		img, int64(img.Len()), minio.PutObjectOptions{})
 
 	if err != nil {
 		return errors.Wrap(err, "failed to put object in minio")
