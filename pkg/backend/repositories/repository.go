@@ -173,11 +173,8 @@ func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, so
 	}
 
 	name = strings.ReplaceAll(name, " ", ":* & ")
-	if checkCyrillic(name) {
-		stmp = stmp.Where("to_tsvector(name) @@ to_tsquery('russian', ?)", name)
-	} else {
-		stmp = stmp.Where("to_tsvector(name) @@ to_tsquery(?)", name)
-	}
+
+	stmp = stmp.Where("name % ?", name)
 
 	err := stmp.Find(&docs).Error
 	if err != nil {
