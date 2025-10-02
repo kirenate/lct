@@ -172,7 +172,7 @@ func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, so
 	if status != "" {
 		stmp = stmp.Where("status = ?", status)
 	}
-	//name = strings.ReplaceAll(name, " ", ":* & ")
+
 	err := stmp.Find(&docs).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find documents in db")
@@ -195,7 +195,7 @@ func (r *Repository) GetOriginalLink(name string) (*url.URL, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get object from minio")
 	}
-
+	
 	return u, nil
 }
 
@@ -208,4 +208,14 @@ func (r *Repository) SaveThumbToMinio(img *bytes.Buffer, name string) error {
 	}
 
 	return nil
+}
+
+func (r *Repository) GetPages(documentId uuid.UUID) ([]schemas.PageMetadata, error) {
+	var pages *[]schemas.PageMetadata
+	err := r.db.Table("page_metadata").Where("document_id", documentId).
+		Find(&pages).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get pages")
+	}
+	return *pages, nil
 }

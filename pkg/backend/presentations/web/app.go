@@ -26,7 +26,7 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app.Use(recover2.New(recover2.Config{EnableStackTrace: true}))
 	app.Use(fiber_utils.MiddlewareCtxTimeout(29 * time.Second))
 
-	app.Post("/api/documents/:documentId/pages", r.getDocumentPages)
+	app.Get("/api/documents/:documentId/get", r.getDocumentPages)
 
 	app.Get("/api/documents/:documentId", r.getSingleDocument)
 	app.Get("/api/documents", r.getDocuments)

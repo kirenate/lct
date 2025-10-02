@@ -172,3 +172,12 @@ func compressImage(file multipart.File) (*bytes.Buffer, error) {
 
 	return w, nil
 }
+
+func (r *Service) GetPages(id uuid.UUID) ([]schemas.PageMetadata, error) {
+	pages, err := r.repository.GetPages(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get pages")
+	}
+
+	return pages, nil
+}
