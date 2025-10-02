@@ -6,27 +6,18 @@ import (
 )
 
 type Attribute struct {
-	ID         uuid.UUID `json:"id"`
-	PageId     uuid.UUID `json:"pageId"`
-	DocumentId uuid.UUID `json:"documentId"`
-	Name       string    `json:"name"`
-	Value      string    `json:"value"`
-	Confidence int       `json:"confidence"`
-	X1         int       `json:"x1"`
-	Y1         int       `json:"y1"`
-	X2         int       `json:"x2"`
-	Y2         int       `json:"y2"`
+	ID         uuid.UUID `json:"id,omitempty"`
+	PageId     uuid.UUID `json:"pageId,omitempty"`
+	DocumentId uuid.UUID `json:"documentId,omitempty"`
+	Name       string    `json:"name,omitempty"`
+	Value      string    `json:"value,omitempty"`
+	Confidence int       `json:"confidence,omitempty"`
 }
 
 type Text struct {
-	ID         uuid.UUID `json:"id"`
-	PageId     uuid.UUID `json:"pageId"`
-	DocumentId uuid.UUID `json:"documentId"`
-	Text       string    `json:"text"`
-	X1         int       `json:"x1"`
-	Y1         int       `json:"y1"`
-	X2         int       `json:"x2"`
-	Y2         int       `json:"y2"`
+	RecScores []int    `json:"rec_scores" gorm:"serializer:json"`
+	RecPolys  [][]int  `json:"rec_polys" gorm:"serializer:json"`
+	RecTexts  []string `json:"rec_texts" gorm:"serializer:json"`
 }
 type PageMetadata struct {
 	ID         uuid.UUID `json:"id"`
@@ -34,6 +25,7 @@ type PageMetadata struct {
 	Thumb      string    `json:"thumb"`
 	Original   string    `json:"original"`
 	Number     int       `json:"number"`
+	Text       Text      `json:"text" gorm:"serializer:json"`
 }
 
 type Page struct {

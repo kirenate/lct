@@ -21,6 +21,8 @@ type settings struct {
 	URL      string `env:"URL"                             envDefault:"0.0.0.0:8080"`
 	CertFile string `env:"SSL_CERTFILE"                       envDefault:"./.data/cert.pem"`
 	KeyFile  string `env:"SSL_KEYFILE"                        envDefault:"./.data/cert.key"`
+
+	MlUrl string `env:"ML_URL"`
 }
 
 var Settings = settings_utils.MustGetSetting[settings]("LCT_") //nolint:gochecknoglobals // required

@@ -32,7 +32,7 @@ func main() {
 		panic(errors.Wrap(err, "failed to connect database"))
 	}
 
-	err = db.AutoMigrate(&schemas.DocumentMetadata{}, &schemas.PageMetadata{}, &schemas.Attribute{}, &schemas.Text{})
+	err = db.AutoMigrate(&schemas.DocumentMetadata{}, &schemas.PageMetadata{})
 	if err != nil {
 		panic(errors.Wrap(err, "failed to merge database"))
 	}

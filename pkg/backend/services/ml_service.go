@@ -1,26 +1,36 @@
 package services
 
 import (
+	"bytes"
 	"encoding/json"
-	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
+	"io"
 	"main.go/schemas"
+	"net/http"
 )
 
-func (r *Service) ProcessWithML(c *fiber.Ctx, u string) error {
-	agent := fiber.Get(u)
-	_, body, errs := agent.Bytes()
-	if len(errs) > 0 {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"errs": errs,
-		})
-	}
-
-	var attrs *schemas.Attribute
-	err := json.Unmarshal(body, &attrs)
+func (r *Service) ProcessWithML(u string, path string) (*schemas.Text, error) {
+	client := http.Client{}
+	body := bytes.NewReader([]byte(path))
+	req, err := http.NewRequest("POST", u, body)
 	if err != nil {
-		return errors.Wrap(err, "failed to unmarshal attrs")
+		return nil, errors.Wrap(err, "failed to create request")
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "request failed")
 	}
 
-	return nil
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return nil, errors.Wrap(err, "failed to read request body")
+	}
+
+	var attrs *schemas.Text
+	err = json.Unmarshal(buf, &attrs)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal text")
+	}
+
+	return attrs, nil
 }

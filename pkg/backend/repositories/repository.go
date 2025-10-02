@@ -151,7 +151,7 @@ func (r *Repository) SaveAttribute(attr *schemas.Attribute) error {
 	return nil
 }
 
-func (r *Repository) SaveText(text *schemas.Text) error {
+func (r *Repository) SaveText(text *[]schemas.Text) error {
 	err := r.db.Table("text").Save(&text).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to save text")
@@ -195,7 +195,7 @@ func (r *Repository) GetOriginalLink(name string) (*url.URL, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get object from minio")
 	}
-	
+
 	return u, nil
 }
 
@@ -212,10 +212,14 @@ func (r *Repository) SaveThumbToMinio(img *bytes.Buffer, name string) error {
 
 func (r *Repository) GetPages(documentId uuid.UUID) ([]schemas.PageMetadata, error) {
 	var pages *[]schemas.PageMetadata
-	err := r.db.Table("page_metadata").Where("document_id", documentId).
+
+	err := r.db.Table("page_metadata").
+		Order("document_id DESC").
+		Where("document_id", documentId).
 		Find(&pages).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get pages")
 	}
+
 	return *pages, nil
 }

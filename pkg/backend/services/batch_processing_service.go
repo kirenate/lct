@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"golang.org/x/image/draw"
@@ -13,6 +14,7 @@ import (
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
+	"os"
 	"strings"
 	"time"
 )
@@ -112,12 +114,17 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	if err != nil {
 		return errors.Wrap(err, "failed to get thumbnail link")
 	}
+	text, err := r.SendText(contents, uid)
+	if err != nil {
+		return errors.Wrap(err, "failed to send image")
+	}
 	page := &schemas.PageMetadata{
 		ID:         uid,
 		DocumentId: documentId,
 		Thumb:      uThumb.String(),
 		Original:   u.String(),
 		Number:     number,
+		Text:       *text,
 	}
 
 	err = r.repository.SavePageToPg(page)
@@ -180,4 +187,29 @@ func (r *Service) GetPages(id uuid.UUID) ([]schemas.PageMetadata, error) {
 	}
 
 	return pages, nil
+}
+
+func (r *Service) SendText(contents multipart.File, uid uuid.UUID) (*schemas.Text, error) {
+	var p []byte
+	_, err := contents.Read(p)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return nil, errors.Wrap(err, "failed to read contents")
+	}
+	err = os.WriteFile(uid.String()+".jpg", p, 0666)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to write image")
+	}
+
+	text, err := r.ProcessWithML(settings_utils.Settings.MlUrl, uid.String()+".jpg")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to process with ML")
+	}
+	defer func() {
+		err = os.Remove(uid.String() + ".jpg")
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	return text, nil
 }
