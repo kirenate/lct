@@ -32,7 +32,7 @@ class OCR:
         nparr = np.frombuffer(raw_image, dtype=np.uint8)
         image = cv2.imdecode(nparr, flags=1)
 
-        standard_size = 2000
+        standard_size = 1000
         gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         img = cv2.GaussianBlur(gray_img, (5, 5), 0)
         res_img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 10)
