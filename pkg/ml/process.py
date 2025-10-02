@@ -32,7 +32,7 @@ class OCR:
         nparr = np.frombuffer(raw_image, dtype=np.uint8)
         image = cv2.imdecode(nparr, flags=1)
 
-        standard_size = 4000
+        standard_size = 2000
         gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         img = cv2.GaussianBlur(gray_img, (5, 5), 0)
         res_img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 10)
@@ -56,13 +56,8 @@ class OCR:
         img, _ = self._preprocess_image(raw_image)
         logger.info(f"image.reshaped {img.shape=}")
 
-        result = self._ocr.ocr(img)  # это уже для каждого файла вызывается
+        result = self._ocr.predict(img)  # это уже для каждого файла вызывается
         logger.info(f"image.processed elapsed={time.monotonic() - t0:2f}f ")
-
-        for res in result:
-            res.print()
-            res.save_to_img("output")
-            res.save_to_json("output")
 
         logger.info(
             f"image.processed elapsed={time.monotonic() - t0:2f}f "
