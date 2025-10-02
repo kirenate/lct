@@ -1,7 +1,9 @@
 package services
 
 import (
+	"bytes"
 	"github.com/google/uuid"
+	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
 	"main.go/repositories"
 	"main.go/schemas"
@@ -83,18 +85,40 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	if err != nil {
 		return errors.Wrap(err, "failed to open uploaded page")
 	}
-	page := &schemas.PageMetadata{
-		ID:         uid,
-		DocumentId: documentId,
-		Thumb:      "",
-		Original:   "",
-		Number:     number,
-	}
 
 	err = r.repository.SaveToMinio(doc, uid, contents, path)
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to minio")
 	}
+	u, err := r.repository.GetOriginalLink(path)
+	if err != nil {
+		return errors.Wrap(err, "getting link to original")
+	}
+
+	var img []byte
+	_, err = contents.Read(img)
+	if err != nil {
+		return errors.Wrap(err, "failed to read img")
+	}
+	processedImg, err := imageProcessing(img)
+	buf := bytes.NewReader(processedImg)
+	err = r.repository.SaveThumbToMinio(buf, path+"_thumb.png")
+	if err != nil {
+		return errors.Wrap(err, "failed to save thumbnail in minio")
+	}
+
+	uThumb, err := r.repository.GetOriginalLink(path + "_thumb.png")
+	if err != nil {
+		return errors.Wrap(err, "failed to get thumbnail link")
+	}
+	page := &schemas.PageMetadata{
+		ID:         uid,
+		DocumentId: documentId,
+		Thumb:      uThumb.String(),
+		Original:   u.String(),
+		Number:     number,
+	}
+
 	err = r.repository.SavePageToPg(page)
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to postgres")
@@ -126,4 +150,19 @@ func (r *Service) GetSingleDocument(id uuid.UUID) (*schemas.DocumentMetadata, er
 	}
 
 	return doc, nil
+}
+
+func imageProcessing(img []byte) ([]byte, error) {
+
+	converted, err := bimg.NewImage(img).Convert(bimg.PNG)
+	if err != nil {
+		return []byte{}, errors.Wrap(err, "failed ot convert image to png")
+	}
+
+	processed, err := bimg.NewImage(converted).Process(bimg.Options{Quality: 100})
+	if err != nil {
+		return []byte{}, errors.Wrap(err, "failed to resize image for thumbnail")
+	}
+
+	return processed, nil
 }
