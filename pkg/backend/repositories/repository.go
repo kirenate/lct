@@ -24,7 +24,9 @@ type Repository struct {
 
 func NewRepository(minio *minio.Client, db *gorm.DB) *Repository {
 	repository := &Repository{minio: minio, db: db}
-	repository.db.Raw("CREATE INDEX text_search ON document_metadata USING GIN (to_tsvector(name));")
+	repository.db.Raw("CREATE EXTENSION pg_trgm;")
+	repository.db.Raw("CREATE INDEX trgm_name_idx ON document_metadata USING gist (name gist_trgm_ops);")
+
 	return repository
 }
 
