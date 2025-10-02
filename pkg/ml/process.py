@@ -4,6 +4,7 @@
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
@@ -50,7 +51,7 @@ class OCR:
         result_image = cv2.resize(dims_image, dim, interpolation=cv2.INTER_AREA)
         return result_image, k_transform
 
-    def predict(self, raw_image: bytes) -> None:
+    def predict(self, raw_image: bytes) -> tuple[Any, Any, Any]:
         t0 = time.monotonic()
         logger.info(f"processing.image len={len(raw_image)/1024/1024:2f}MB")
         img, _ = self._preprocess_image(raw_image)
@@ -58,14 +59,9 @@ class OCR:
 
         result = self._ocr.predict(img)  # это уже для каждого файла вызывается
         logger.info(f"image.processed elapsed={time.monotonic() - t0:2f}f ")
-
-        logger.info(
-            f"image.processed elapsed={time.monotonic() - t0:2f}f "
-            f"{result[0]["rec_polys"]}, "
-            f"{result[0]["rec_texts"]}, {result[0]["rec_scores"]}"
-        )
+        return [i.tolist() for i in result[0]["rec_polys"]], result[0]["rec_texts"], result[0]["rec_scores"]
 
 
 if __name__ == "__main__":
-    with open(Path("test.jpg"), "rb") as file:
-        OCR().predict(file.read())
+    with open(Path("test1.jpg"), "rb") as file:
+        print(OCR().predict(file.read()))  # noqa: T201

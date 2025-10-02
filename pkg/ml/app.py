@@ -1,3 +1,5 @@
+from typing import Any
+
 import uvicorn
 from fastapi import FastAPI, UploadFile
 from process import OCR
@@ -8,8 +10,8 @@ def create_app() -> FastAPI:
     ocr = OCR()
 
     @app.post("/process")
-    async def process(image: UploadFile) -> None:
-        ocr.predict(await image.read())
+    async def process(image: UploadFile) -> tuple[Any, Any, Any]:
+        return ocr.predict(await image.read())
 
     return app
 
