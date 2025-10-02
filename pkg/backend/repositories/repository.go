@@ -23,8 +23,7 @@ type Repository struct {
 
 func NewRepository(minio *minio.Client, db *gorm.DB) *Repository {
 	repository := &Repository{minio: minio, db: db}
-	repository.db.Raw("CREATE EXTENSION pg_trgm;")
-	repository.db.Raw("CREATE INDEX trgm_name_idx ON document_metadata USING gist (name gist_trgm_ops);")
+	repository.db.Raw("CREATE INDEX search_index document_metadata USING GIN(to_tsvector('name'))")
 
 	return repository
 }
@@ -163,18 +162,16 @@ func (r *Repository) SaveText(text *schemas.Text) error {
 func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, sorting string) (*[]schemas.DocumentMetadata, error) {
 	var docs *[]schemas.DocumentMetadata
 
-	stmp := r.db.Table("document_metadata").Order(sorting + " " + order).
+	stmp := r.db.Table("document_metadata").
+		Where("to_tsvector(name) @@ plainto_tsquery(?)", name).
+		Order(sorting + " " + order).
 		Offset(page * pageSize).
 		Limit(pageSize)
 
 	if status != "" {
 		stmp = stmp.Where("status = ?", status)
 	}
-
 	//name = strings.ReplaceAll(name, " ", ":* & ")
-
-	stmp = stmp.Where("pg_trgm.similarity(name, ?) > 0.5", name)
-
 	err := stmp.Find(&docs).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find documents in db")
