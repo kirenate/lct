@@ -9,7 +9,6 @@ import (
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
-	"strings"
 	"unicode"
 )
 
@@ -172,9 +171,9 @@ func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, so
 		stmp = stmp.Where("status = ?", status)
 	}
 
-	name = strings.ReplaceAll(name, " ", ":* & ")
+	//name = strings.ReplaceAll(name, " ", ":* & ")
 
-	stmp = stmp.Where("gist_trgm_ops.similarity(name, ?) > 0.5", name)
+	stmp = stmp.Where("pg_trgm.similarity(name, ?) > 0.5", name)
 
 	err := stmp.Find(&docs).Error
 	if err != nil {
