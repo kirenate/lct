@@ -174,7 +174,7 @@ func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, so
 
 	name = strings.ReplaceAll(name, " ", ":* & ")
 
-	stmp = stmp.Where("trgm_name_idx.similarity(name, ?) > 0.5", name)
+	stmp = stmp.Where("gist_trgm_ops.similarity(name, ?) > 0.5", name)
 
 	err := stmp.Find(&docs).Error
 	if err != nil {
