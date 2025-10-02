@@ -2,8 +2,8 @@ package services
 
 import (
 	"bytes"
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/google/uuid"
-	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
 	"main.go/repositories"
 	"main.go/schemas"
@@ -153,16 +153,15 @@ func (r *Service) GetSingleDocument(id uuid.UUID) (*schemas.DocumentMetadata, er
 }
 
 func imageProcessing(img []byte) ([]byte, error) {
-
-	converted, err := bimg.NewImage(img).Convert(bimg.PNG)
+	buf, err := vips.NewThumbnailFromBuffer(img, 600, 600, vips.InterestingAll)
 	if err != nil {
-		return []byte{}, errors.Wrap(err, "failed ot convert image to png")
+		return []byte{}, errors.Wrap(err, "failed to create thumbnail")
 	}
 
-	processed, err := bimg.NewImage(converted).Process(bimg.Options{Quality: 100})
+	image, _, err := buf.ExportPng(vips.NewPngExportParams())
 	if err != nil {
-		return []byte{}, errors.Wrap(err, "failed to resize image for thumbnail")
+		return []byte{}, errors.Wrap(err, "failed to export img")
 	}
 
-	return processed, nil
+	return image, nil
 }
