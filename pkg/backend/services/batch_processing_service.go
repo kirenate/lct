@@ -103,7 +103,9 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	}
 	buf := bytes.NewReader(img)
 	processedImg, err := compressImage(buf)
-
+	if err != nil {
+		return errors.Wrap(err, "failed to compress image")
+	}
 	err = r.repository.SaveThumbToMinio(processedImg, path+"_thumb.png")
 	if err != nil {
 		return errors.Wrap(err, "failed to save thumbnail in minio")
