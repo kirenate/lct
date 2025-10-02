@@ -2,7 +2,7 @@ package services
 
 import (
 	"bytes"
-	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/cshum/vipsgen/vips"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"main.go/repositories"
@@ -153,12 +153,12 @@ func (r *Service) GetSingleDocument(id uuid.UUID) (*schemas.DocumentMetadata, er
 }
 
 func imageProcessing(img []byte) ([]byte, error) {
-	buf, err := vips.NewThumbnailFromBuffer(img, 600, 600, vips.InterestingAll)
+	buf, err := vips.NewThumbnailBuffer(img, 600, &vips.ThumbnailBufferOptions{Height: 600})
 	if err != nil {
 		return []byte{}, errors.Wrap(err, "failed to create thumbnail")
 	}
 
-	image, _, err := buf.ExportPng(vips.NewPngExportParams())
+	image, err := buf.PngsaveBuffer(nil)
 	if err != nil {
 		return []byte{}, errors.Wrap(err, "failed to export img")
 	}
