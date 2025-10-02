@@ -98,7 +98,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 
 	var img []byte
 	_, err = contents.Read(img)
-	if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return errors.Wrap(err, "failed to read img")
 	}
 	buf := bytes.NewReader(img)
