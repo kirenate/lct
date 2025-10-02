@@ -2,9 +2,12 @@ package services
 
 import (
 	"bytes"
-	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"golang.org/x/image/draw"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"main.go/repositories"
 	"main.go/schemas"
@@ -150,34 +153,22 @@ func (r *Service) GetSingleDocument(id uuid.UUID) (*schemas.DocumentMetadata, er
 	return doc, nil
 }
 
-//
-//func imageProcessing(img []byte) ([]byte, error) {
-//	buf, err := vips.NewThumbnailBuffer(img, 600, &vips.ThumbnailBufferOptions{Height: 600})
-//	if err != nil {
-//		return []byte{}, errors.Wrap(err, "failed to create thumbnail")
-//	}
-//
-//	image, err := buf.PngsaveBuffer(nil)
-//	if err != nil {
-//		return []byte{}, errors.Wrap(err, "failed to export img")
-//	}
-//
-//	return image, nil
-//}
-
-func compressImage(buf io.Reader) (*bytes.Buffer, error) {
-	img, err := imaging.Decode(buf)
+func compressImage(file multipart.File) (*bytes.Buffer, error) {
+	_, err := file.Seek(0, 0)
 	if err != nil {
+		return nil, errors.Wrap(err, "failed to seek file")
+	}
+	src, err := jpeg.Decode(file)
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, errors.Wrap(err, "failed to decode image")
 	}
-
-	img = imaging.Resize(img, 128, 128, imaging.Lanczos)
-
-	buffer := new(bytes.Buffer)
-	err = imaging.Encode(buffer, img, imaging.PNG)
+	dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/2, src.Bounds().Max.Y/2))
+	draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	w := new(bytes.Buffer)
+	err = png.Encode(w, dst)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to encode image")
 	}
 
-	return buffer, nil
+	return w, nil
 }
