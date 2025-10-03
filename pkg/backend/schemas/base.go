@@ -15,17 +15,33 @@ type Attribute struct {
 }
 
 type Text struct {
-	RecScores []int    `json:"rec_scores" gorm:"serializer:json"`
-	RecPolys  [][]int  `json:"rec_polys" gorm:"serializer:json"`
-	RecTexts  []string `json:"rec_texts" gorm:"serializer:json"`
+	RecScores []int       `json:"rec_scores" gorm:"serializer:json"`
+	RecPolys  [][]float64 `json:"rec_polys" gorm:"serializer:json"`
+	RecTexts  []string    `json:"rec_texts" gorm:"serializer:json"`
 }
-type PageMetadata struct {
+
+type TextJson struct {
 	ID         uuid.UUID `json:"id"`
-	DocumentId uuid.UUID `json:"documentId"`
-	Thumb      string    `json:"thumb"`
-	Original   string    `json:"original"`
-	Number     int       `json:"number"`
-	Text       Text      `json:"text" gorm:"serializer:json"`
+	Text       string    `json:"text"`
+	Confidence int       `json:"confidence"`
+	X1         float64   `json:"x1"`
+	Y1         float64   `json:"y1"`
+	X2         float64   `json:"x2"`
+	Y2         float64   `json:"y2"`
+	X3         float64   `json:"x3"`
+	Y3         float64   `json:"y3"`
+	X4         float64   `json:"x4"`
+	Y4         float64   `json:"y4"`
+}
+
+type PageMetadata struct {
+	ID         uuid.UUID   `json:"id"`
+	DocumentId uuid.UUID   `json:"documentId"`
+	Thumb      string      `json:"thumb"`
+	Original   string      `json:"original"`
+	Number     int         `json:"number"`
+	FullText   []TextJson  `json:"fullText" gorm:"serializer:json"`
+	Attrs      []Attribute `json:"attrs,omitempty" gorm:"serializer:json"`
 }
 
 type Page struct {

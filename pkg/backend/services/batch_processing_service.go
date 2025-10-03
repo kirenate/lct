@@ -128,7 +128,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		Thumb:      uThumb.String(),
 		Original:   u.String(),
 		Number:     number,
-		Text:       *text,
+		FullText:   *text,
 	}
 
 	err = r.repository.SavePageToPg(page)
@@ -202,7 +202,7 @@ func (r *Service) GetPages(id uuid.UUID) ([]schemas.PageMetadata, error) {
 	return pages, nil
 }
 
-func (r *Service) SendText(contents multipart.File, uid uuid.UUID) (*schemas.Text, error) {
+func (r *Service) SendText(contents multipart.File, uid uuid.UUID) (*[]schemas.TextJson, error) {
 	var p []byte
 	_, err := contents.Read(p)
 	if err != nil && !errors.Is(err, io.EOF) {
