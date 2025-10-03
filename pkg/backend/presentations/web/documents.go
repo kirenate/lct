@@ -44,10 +44,6 @@ func (r *Presentation) getSingleDocument(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to find document")
 	}
 
-	if doc.Name != "" {
-		doc.Name = strings.ToTitle(doc.Name)
-	}
-
 	return c.JSON(fiber.Map{"data": doc})
 }
 
