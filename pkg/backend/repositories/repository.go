@@ -75,15 +75,6 @@ func (r *Repository) DeleteDocument(documentId uuid.UUID) error {
 			return errors.Wrap(err, "failed to delete pages metadata")
 		}
 
-		err = tx.Table("attribute").Where("document_id", documentId).Delete(&schemas.Attribute{}, documentId).Error
-		if err != nil {
-			return errors.Wrap(err, "failed to delete attributes")
-		}
-
-		err = tx.Table("text").Where("document_id", documentId).Delete(&schemas.Text{}, documentId).Error
-		if err != nil {
-			return errors.Wrap(err, "failed to delete text")
-		}
 		return nil
 	})
 	if err != nil {
