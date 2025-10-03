@@ -14,7 +14,7 @@ import (
 )
 
 var StatusProcessing = "processing"
-var StatusComplete = "succsess"
+var StatusComplete = "success"
 var StatusFailed = "error"
 
 type Repository struct {
