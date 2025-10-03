@@ -34,7 +34,7 @@ func (r *Repository) CreateBucket(bucketName string) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to check if bucket exists")
 		}
-		err = r.minio.SetBucketPolicy(bucketName, "public")
+		err = r.minio.SetBucketPolicy(bucketName, settings_utils.Settings.BucketPolicy)
 		if err != nil {
 			return errors.Wrap(err, "setting bucket policy failed")
 		}
