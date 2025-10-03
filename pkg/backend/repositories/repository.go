@@ -223,3 +223,13 @@ func (r *Repository) StatusSuccess(documentId uuid.UUID) error {
 
 	return nil
 }
+
+func (r *Repository) CountDocs() (int64, error) {
+	var count int64
+	err := r.db.Table("document_metadata").Count(&count).Error
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count documents")
+	}
+
+	return count, nil
+}

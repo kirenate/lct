@@ -58,23 +58,18 @@ func (r *Presentation) getDocuments(c *fiber.Ctx) error {
 	name := c.Query("query")
 	status := c.Query("status")
 	if name != "" || status != "" {
-		docs, err := r.service.SearchDocuments(page, pageSize, sortBy, name, status)
+		docs, count, err := r.service.SearchDocuments(page, pageSize, sortBy, name, status)
 		if err != nil {
 			return errors.Wrap(err, "failed to search documents")
 		}
-		return c.JSON(fiber.Map{"data": *docs, "total": len(*docs)})
+		return c.JSON(fiber.Map{"data": *docs, "total": count})
 	}
-	docs, err := r.service.GetDocuments(page, pageSize, sortBy)
+	docs, count, err := r.service.GetDocuments(page, pageSize, sortBy)
 	if err != nil {
 		return errors.Wrap(err, "failed to get documents")
 	}
 
-	for i := range docs {
-		if docs[i].Name != "" {
-			docs[i].Name = strings.ToTitle(docs[i].Name)
-		}
-	}
-	return c.JSON(fiber.Map{"data": docs, "total": len(docs)})
+	return c.JSON(fiber.Map{"data": docs, "total": count})
 }
 
 func (r *Presentation) deleteDocument(c *fiber.Ctx) error {

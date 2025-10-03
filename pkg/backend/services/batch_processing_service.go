@@ -32,7 +32,7 @@ func NewService(repository *repositories.Repository) (*Service, error) {
 	return service, nil
 }
 
-func (r *Service) GetDocuments(page int, pageSize int, sortBy string) ([]schemas.DocumentMetadata, error) {
+func (r *Service) GetDocuments(page int, pageSize int, sortBy string) ([]schemas.DocumentMetadata, int64, error) {
 	order := "DESC"
 	sorting, ok := strings.CutPrefix(sortBy, "-")
 	if ok {
@@ -43,9 +43,13 @@ func (r *Service) GetDocuments(page int, pageSize int, sortBy string) ([]schemas
 	}
 	docs, err := r.repository.GetDocuments(page, pageSize, order, sorting)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get documents")
+		return nil, 0, errors.Wrap(err, "failed to get documents")
 	}
-	return docs, nil
+	count, err := r.repository.CountDocs()
+	if err != nil {
+		return nil, 0, errors.Wrap(err, "get documents")
+	}
+	return docs, count, nil
 }
 
 func (r *Service) DeleteDocument(documentId uuid.UUID) error {
@@ -140,7 +144,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	return nil
 }
 
-func (r *Service) SearchDocuments(page, pageSize int, sortBy, name, status string) (*[]schemas.DocumentMetadata, error) {
+func (r *Service) SearchDocuments(page, pageSize int, sortBy, name, status string) (*[]schemas.DocumentMetadata, int64, error) {
 	order := "DESC"
 	sorting, ok := strings.CutPrefix(sortBy, "-")
 	if ok {
@@ -151,9 +155,13 @@ func (r *Service) SearchDocuments(page, pageSize int, sortBy, name, status strin
 	}
 	docs, err := r.repository.SearchDocuments(page, pageSize, order, name, status, sorting)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to search documents")
+		return nil, 0, errors.Wrap(err, "failed to search documents")
 	}
-	return docs, nil
+	count, err := r.repository.CountDocs()
+	if err != nil {
+		return nil, 0, errors.Wrap(err, "failed to count docs")
+	}
+	return docs, count, nil
 }
 
 func (r *Service) GetSingleDocument(id uuid.UUID) (*schemas.DocumentMetadata, error) {
