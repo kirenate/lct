@@ -14,8 +14,8 @@ import (
 )
 
 var StatusProcessing = "processing"
-var StatusComplete = "complete"
-var StatusFailed = "failed"
+var StatusComplete = "succsess"
+var StatusFailed = "error"
 
 type Repository struct {
 	minio *minio.Client
