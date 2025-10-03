@@ -100,7 +100,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to minio")
 	}
-	u, err := r.repository.GetOriginalLink(path)
+	u, err := r.repository.GetOriginalLink(uid.String() + ".jpg")
 	if err != nil {
 		return errors.Wrap(err, "getting link to original")
 	}
@@ -109,12 +109,12 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	if err != nil {
 		return errors.Wrap(err, "failed to compress image")
 	}
-	err = r.repository.SaveThumbToMinio(processedImg, uid.String()+"_thumb.png")
+	err = r.repository.SaveThumbToMinio(processedImg, uid.String()+"_thumb.jpg")
 	if err != nil {
 		return errors.Wrap(err, "failed to save thumbnail in minio")
 	}
 
-	uThumb, err := r.repository.GetOriginalLink(uid.String() + "_thumb.png")
+	uThumb, err := r.repository.GetOriginalLink(uid.String() + "_thumb.jpg")
 	if err != nil {
 		return errors.Wrap(err, "failed to get thumbnail link")
 	}
