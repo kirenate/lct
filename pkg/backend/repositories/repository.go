@@ -214,3 +214,12 @@ func (r *Repository) GetPages(documentId uuid.UUID) ([]schemas.PageMetadata, err
 
 	return *pages, nil
 }
+
+func (r *Repository) StatusSuccess(documentId uuid.UUID) error {
+	err := r.db.Table("document_metadata").Where("id", documentId).Update("status", StatusComplete).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to update status")
+	}
+
+	return nil
+}

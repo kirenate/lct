@@ -132,6 +132,11 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		return errors.Wrap(err, "failed to save page to postgres")
 	}
 
+	err = r.repository.StatusSuccess(documentId)
+	if err != nil {
+		return errors.Wrap(err, "failed to change status")
+	}
+
 	return nil
 }
 
