@@ -9,8 +9,6 @@ import (
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
-	"net/url"
-	"time"
 )
 
 var StatusProcessing = "processing"
@@ -44,7 +42,7 @@ func (r *Repository) CreateBucket(bucketName string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to create bucket")
 	}
-	err = r.minio.SetBucketPolicy(bucketName, "public")
+	err = r.minio.SetBucketPolicy(bucketName, settings_utils.Settings.BucketPolicy)
 	if err != nil {
 		return errors.Wrap(err, "setting bucket policy failed")
 	}
@@ -185,15 +183,6 @@ func (r *Repository) GetDocumentById(id uuid.UUID) (*schemas.DocumentMetadata, e
 	}
 
 	return doc, nil
-}
-
-func (r *Repository) GetOriginalLink(name string) (*url.URL, error) {
-	u, err := r.minio.PresignedGetObject(settings_utils.Settings.MinioBucketName, name, time.Hour*3, url.Values{})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get object from minio")
-	}
-
-	return u, nil
 }
 
 func (r *Repository) SaveThumbToMinio(img *bytes.Buffer, name string) error {

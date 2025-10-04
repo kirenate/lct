@@ -100,10 +100,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to minio")
 	}
-	u, err := r.repository.GetOriginalLink(uid.String() + ".jpg")
-	if err != nil {
-		return errors.Wrap(err, "getting link to original")
-	}
+	u := getOriginalLink(uid.String() + ".jpg")
 
 	processedImg, err := compressImage(contents)
 	if err != nil {
@@ -114,10 +111,8 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		return errors.Wrap(err, "failed to save thumbnail in minio")
 	}
 
-	uThumb, err := r.repository.GetOriginalLink(uid.String() + "_thumb.jpg")
-	if err != nil {
-		return errors.Wrap(err, "failed to get thumbnail link")
-	}
+	uThumb := getOriginalLink(uid.String() + "_thumb.jpg")
+
 	text, err := r.SendText(contents, uid)
 	if err != nil {
 		return errors.Wrap(err, "failed to send image")
@@ -125,8 +120,8 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 	page := &schemas.PageMetadata{
 		ID:         uid,
 		DocumentId: documentId,
-		Thumb:      uThumb.String(),
-		Original:   u.String(),
+		Thumb:      uThumb,
+		Original:   u,
 		Number:     number,
 		FullText:   *text,
 	}
@@ -225,4 +220,9 @@ func (r *Service) SendText(contents multipart.File, uid uuid.UUID) (*[]schemas.T
 	}()
 
 	return text, nil
+}
+
+func getOriginalLink(name string) string {
+	u := settings_utils.Settings.MinioEndpoint + "/" + settings_utils.Settings.MinioBucketName + "/" + name
+	return u
 }

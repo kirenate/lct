@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	minio2 "github.com/minio/minio-go"
+	"github.com/minio/minio-go/pkg/credentials"
 	"github.com/pkg/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,8 +17,9 @@ import (
 )
 
 func main() {
-	minio, err := minio2.New(settings_utils.Settings.MinioEndpoint, settings_utils.Settings.MinioAccessKeyID,
-		settings_utils.Settings.MinioSecretAccessKey, settings_utils.Settings.MinioSecure)
+	minio, err := minio2.NewWithCredentials(settings_utils.Settings.MinioEndpoint,
+		credentials.NewStaticV2(settings_utils.Settings.MinioAccessKeyID, settings_utils.Settings.MinioSecretAccessKey, ""),
+		settings_utils.Settings.MinioSecure, "us-east-1")
 	if err != nil {
 		panic(errors.Wrap(err, "failed to initiate minio client"))
 	}
