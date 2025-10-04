@@ -102,7 +102,7 @@ func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
 			return errors.Wrap(err, "failed to upload document")
 		}
 		for i, vv := range v {
-			err = r.service.UploadPage(vv, *documentId, i, name)
+			err = r.service.UploadPage(vv, *documentId, i)
 			if err != nil {
 				return errors.Wrap(err, "failed to upload file")
 			}

@@ -88,7 +88,7 @@ func (r *Service) UploadDocument(minim, maxim int, name, code string) (*uuid.UUI
 	return &uid, nil
 }
 
-func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, number int, path string) error {
+func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, number int) error {
 	uid := uuid.New()
 
 	contents, err := doc.Open()
@@ -96,7 +96,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		return errors.Wrap(err, "failed to open uploaded page")
 	}
 
-	err = r.repository.SaveToMinio(doc, uid, contents, path)
+	err = r.repository.SaveToMinio(doc, uid.String()+".jpg", contents)
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to minio")
 	}
@@ -223,6 +223,6 @@ func (r *Service) SendText(contents multipart.File, uid uuid.UUID) (*[]schemas.T
 }
 
 func getOriginalLink(name string) string {
-	u := settings_utils.Settings.MinioEndpoint + "/" + settings_utils.Settings.MinioBucketName + "/" + name
+	u := "http://" + settings_utils.Settings.MinioEndpoint + "/" + settings_utils.Settings.MinioBucketName + "/" + name
 	return u
 }

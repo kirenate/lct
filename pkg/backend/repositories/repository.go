@@ -87,15 +87,9 @@ func (r *Repository) DeleteDocument(documentId uuid.UUID) error {
 	return nil
 }
 
-func (r *Repository) SaveToMinio(doc *multipart.FileHeader, uid uuid.UUID, contents multipart.File, path string) error {
+func (r *Repository) SaveToMinio(doc *multipart.FileHeader, name string, contents multipart.File) error {
 
-	var objName string
-	if path != "" {
-		objName = path + "/" + uid.String() + ".png"
-	} else {
-		objName = uid.String() + ".png"
-	}
-	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, objName,
+	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, name,
 		contents, doc.Size, minio.PutObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to put object in minio")
