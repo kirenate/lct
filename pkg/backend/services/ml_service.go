@@ -2,55 +2,48 @@ package services
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"io"
-	"main.go/schemas"
+	"main.go/utils/settings_utils"
+	"mime/multipart"
 	"net/http"
+	"path/filepath"
 	"time"
 )
 
-func (r *Service) ProcessWithML(u string, path string) (*[]schemas.TextJson, error) {
-	client := http.Client{Timeout: time.Minute * 2}
-	body := bytes.NewReader([]byte(path))
-	req, err := http.NewRequest("POST", u, body)
+func (r *Service) ProcessWithML(file *multipart.FileHeader) (*[]byte, error) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	contents, err := file.Open()
+	defer contents.Close()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open file")
+	}
+	part, err := writer.CreateFormFile("image", filepath.Base(file.Filename))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to write field")
+	}
+	io.Copy(part, contents)
+	writer.Close()
+
+	req, err := http.NewRequest(http.MethodPost, settings_utils.Settings.MlUrl, body)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create request")
 	}
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := http.Client{Timeout: time.Minute * 2}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "request failed")
 	}
-
+	fmt.Println(resp.StatusCode)
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, errors.Wrap(err, "failed to read request body")
 	}
-
-	var text *schemas.Text
-	var textParsed []schemas.TextJson
-	err = json.Unmarshal(buf, &text)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal text")
-	}
-	for i, v := range text.RecScores {
-		textParsed[i].Confidence = v
-	}
-	for i, v := range text.RecPolys {
-		textParsed[i].X1 = v[0]
-		textParsed[i].Y1 = v[1]
-		textParsed[i].X2 = v[2]
-		textParsed[i].Y2 = v[3]
-		textParsed[i].X3 = v[4]
-		textParsed[i].Y3 = v[5]
-		textParsed[i].X4 = v[6]
-		textParsed[i].Y4 = v[7]
-	}
-	for i, v := range text.RecTexts {
-		textParsed[i].Text = v
-	}
-	fmt.Println(text)
-	fmt.Println(textParsed)
-	return &textParsed, nil
+	return &buf, nil
 }
