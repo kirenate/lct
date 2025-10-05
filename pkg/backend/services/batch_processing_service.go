@@ -223,6 +223,6 @@ func (r *Service) SendText(contents multipart.File, uid uuid.UUID) (*[]schemas.T
 }
 
 func getOriginalLink(name string) string {
-	u := "http://" + settings_utils.Settings.MinioEndpoint + "/" + settings_utils.Settings.MinioBucketName + "/" + name
+	u := "/" + settings_utils.Settings.MinioBucketName + "/" + name
 	return u
 }

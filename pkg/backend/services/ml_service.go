@@ -8,10 +8,11 @@ import (
 	"io"
 	"main.go/schemas"
 	"net/http"
+	"time"
 )
 
 func (r *Service) ProcessWithML(u string, path string) (*[]schemas.TextJson, error) {
-	client := http.Client{}
+	client := http.Client{Timeout: time.Minute * 2}
 	body := bytes.NewReader([]byte(path))
 	req, err := http.NewRequest("POST", u, body)
 	if err != nil {
@@ -49,6 +50,7 @@ func (r *Service) ProcessWithML(u string, path string) (*[]schemas.TextJson, err
 	for i, v := range text.RecTexts {
 		textParsed[i].Text = v
 	}
+	fmt.Println(text)
 	fmt.Println(textParsed)
 	return &textParsed, nil
 }
