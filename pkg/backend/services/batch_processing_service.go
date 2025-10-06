@@ -171,11 +171,13 @@ func compressImage(file multipart.File) (*bytes.Buffer, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to seek file")
 	}
+
 	src, err := jpeg.Decode(file)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, errors.Wrap(err, "failed to decode image")
 	}
-	dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/10, src.Bounds().Max.Y/10))
+
+	dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/5, src.Bounds().Max.Y/5))
 	draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
 	w := new(bytes.Buffer)
 	err = png.Encode(w, dst)
