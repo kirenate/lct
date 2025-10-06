@@ -202,16 +202,16 @@ func getOriginalLink(name string) string {
 	return u
 }
 
-func (r *Service) UpdateDocument(doc *schemas.DocumentMetadata) error {
-	err := r.repository.SaveDocToPg(doc)
+func (r *Service) UpdateDocument(doc *schemas.DocumentMetadata, id uuid.UUID) error {
+	err := r.repository.UpdateDocument(doc, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to update document")
 	}
 	return nil
 }
 
-func (r *Service) UpdatePage(page *schemas.PageMetadata) error {
-	err := r.repository.SavePageToPg(page)
+func (r *Service) UpdatePage(page *schemas.PageMetadata, pageId uuid.UUID) error {
+	err := r.repository.UpdatePage(page, pageId)
 	if err != nil {
 		return errors.Wrap(err, "failed to update page")
 	}

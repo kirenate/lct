@@ -29,7 +29,7 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app.Get("/api/documents/:documentId/get", r.getDocumentPages)
 
 	app.Patch("/api/documents/:documentId", r.editDocument)
-	app.Patch("/api/documents/:documentId/:pageId", r.editPage)
+	app.Patch("/api/documents/:documentId:/:pageId", r.editPage)
 
 	app.Get("/api/documents/:documentId", r.getSingleDocument)
 	app.Get("/api/documents", r.getDocuments)

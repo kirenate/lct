@@ -125,7 +125,15 @@ func (r *Presentation) editDocument(c *fiber.Ctx) error {
 			Message: err.Error(),
 		}
 	}
-	err = r.service.UpdateDocument(body)
+	path := c.Path()
+	l := strings.Split(path, "/")
+	idStr := l[len(l)-1]
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse uuid")
+	}
+
+	err = r.service.UpdateDocument(body, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to update")
 	}
@@ -142,7 +150,16 @@ func (r *Presentation) editPage(c *fiber.Ctx) error {
 			Message: err.Error(),
 		}
 	}
-	err = r.service.UpdatePage(body)
+
+	path := c.Path()
+	l := strings.Split(path, "/")
+	idStr := l[len(l)-1]
+	pageId, err := uuid.Parse(idStr)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse uuid")
+	}
+
+	err = r.service.UpdatePage(body, pageId)
 	if err != nil {
 		return errors.Wrap(err, "failed to update")
 	}

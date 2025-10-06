@@ -224,3 +224,60 @@ func (r *Repository) CountDocs() (int64, error) {
 
 	return count, nil
 }
+
+func (r *Repository) UpdateDocument(doc *schemas.DocumentMetadata, documentId uuid.UUID) error {
+	stmp := r.db.Table("document_metadata").Where("id", documentId)
+	if doc.Name != "" {
+		stmp = stmp.Update("name", doc.Name)
+	}
+	if doc.Code != "" {
+		stmp = stmp.Update("code", doc.Code)
+	}
+	if doc.Status != "" {
+		stmp = stmp.Update("status", doc.Status)
+	}
+	if doc.Max != 0 {
+		stmp = stmp.Update("code", doc.Code)
+	}
+	if doc.Min != 0 {
+		stmp = stmp.Update("min", doc.Min)
+	}
+	if doc.Progress != 0 {
+		stmp = stmp.Update("progress", doc.Progress)
+	}
+	err := stmp.Error
+	if err != nil {
+		return errors.Wrap(err, "failed to update document")
+	}
+
+	return nil
+}
+
+func (r *Repository) UpdatePage(page *schemas.PageMetadata, pageId uuid.UUID) error {
+	stmp := r.db.Table("page_metadata").Where("id", pageId)
+	if page.FullText != nil {
+		stmp = stmp.Update("full_text", page.FullText)
+	}
+	if page.Attrs != nil {
+		stmp = stmp.Update("attrs", page.Attrs)
+	}
+	if page.K != 0 {
+		stmp = stmp.Update("k", page.K)
+	}
+	if page.Number != 0 {
+		stmp = stmp.Update("number", page.Number)
+	}
+	if page.Original != "" {
+		stmp = stmp.Update("original", page.Original)
+	}
+	if page.Thumb != "" {
+		stmp = stmp.Update("thumb", page.Thumb)
+	}
+
+	err := stmp.Error
+	if err != nil {
+		return errors.Wrap(err, "failed to update document")
+	}
+
+	return nil
+}
