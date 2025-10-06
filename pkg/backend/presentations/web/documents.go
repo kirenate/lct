@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"main.go/schemas"
 	"strings"
 )
 
@@ -19,7 +20,10 @@ func (r *Presentation) getDocumentPages(c *fiber.Ctx) error {
 		}
 	}
 
-	pages, err := r.service.GetPages(id)
+	page := c.QueryInt("page")
+	pageSize := c.QueryInt("pageSize")
+
+	pages, err := r.service.GetPages(id, page, pageSize)
 	if err != nil {
 		return errors.Wrap(err, "pages not found")
 	}
@@ -107,6 +111,40 @@ func (r *Presentation) uploadDocument(c *fiber.Ctx) error {
 				return errors.Wrap(err, "failed to upload file")
 			}
 		}
+	}
+
+	return nil
+}
+
+func (r *Presentation) editDocument(c *fiber.Ctx) error {
+	var body *schemas.DocumentMetadata
+	err := c.BodyParser(&body)
+	if err != nil {
+		return &fiber.Error{
+			Code:    fiber.StatusUnprocessableEntity,
+			Message: err.Error(),
+		}
+	}
+	err = r.service.UpdateDocument(body)
+	if err != nil {
+		return errors.Wrap(err, "failed to update")
+	}
+
+	return nil
+}
+
+func (r *Presentation) editPage(c *fiber.Ctx) error {
+	var body *schemas.PageMetadata
+	err := c.BodyParser(&body)
+	if err != nil {
+		return &fiber.Error{
+			Code:    fiber.StatusUnprocessableEntity,
+			Message: err.Error(),
+		}
+	}
+	err = r.service.UpdatePage(body)
+	if err != nil {
+		return errors.Wrap(err, "failed to update")
 	}
 
 	return nil

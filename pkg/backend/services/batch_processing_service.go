@@ -188,8 +188,8 @@ func compressImage(file multipart.File) (*bytes.Buffer, error) {
 	return w, nil
 }
 
-func (r *Service) GetPages(id uuid.UUID) ([]schemas.PageMetadata, error) {
-	pages, err := r.repository.GetPages(id)
+func (r *Service) GetPages(id uuid.UUID, page, pageSize int) ([]schemas.PageMetadata, error) {
+	pages, err := r.repository.GetPages(id, page, pageSize)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get pages")
 	}
@@ -200,4 +200,21 @@ func (r *Service) GetPages(id uuid.UUID) ([]schemas.PageMetadata, error) {
 func getOriginalLink(name string) string {
 	u := "/" + settings_utils.Settings.MinioBucketName + "/" + name
 	return u
+}
+
+func (r *Service) UpdateDocument(doc *schemas.DocumentMetadata) error {
+	err := r.repository.SaveDocToPg(doc)
+	if err != nil {
+		return errors.Wrap(err, "failed to update document")
+	}
+	return nil
+}
+
+func (r *Service) UpdatePage(page *schemas.PageMetadata) error {
+	err := r.repository.SavePageToPg(page)
+	if err != nil {
+		return errors.Wrap(err, "failed to update page")
+	}
+
+	return nil
 }

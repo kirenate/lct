@@ -190,11 +190,13 @@ func (r *Repository) SaveThumbToMinio(img *bytes.Buffer, name string) error {
 	return nil
 }
 
-func (r *Repository) GetPages(documentId uuid.UUID) ([]schemas.PageMetadata, error) {
+func (r *Repository) GetPages(documentId uuid.UUID, page, pageSize int) ([]schemas.PageMetadata, error) {
 	var pages *[]schemas.PageMetadata
 
 	err := r.db.Table("page_metadata").
 		Order("document_id DESC").
+		Offset(page*pageSize).
+		Limit(pageSize).
 		Where("document_id", documentId).
 		Find(&pages).Error
 	if err != nil {
