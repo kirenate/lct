@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (r *Service) ProcessWithML(file *multipart.FileHeader) (*[]byte, error) {
+func (r *Service) ProcessWithML(file *multipart.FileHeader) (*string, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	contents, err := file.Open()
@@ -45,5 +45,6 @@ func (r *Service) ProcessWithML(file *multipart.FileHeader) (*[]byte, error) {
 	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, errors.Wrap(err, "failed to read request body")
 	}
-	return &buf, nil
+	res := string(buf)
+	return &res, nil
 }

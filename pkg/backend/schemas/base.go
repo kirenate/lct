@@ -40,14 +40,8 @@ type PageMetadata struct {
 	Thumb      string      `json:"thumb"`
 	Original   string      `json:"original"`
 	Number     int         `json:"number"`
-	FullText   []byte      `json:"fullText" gorm:"serializer:json"`
-	K          int         `json:"k"`
+	FullText   string      `json:"fullText" gorm:"serializer:json"`
 	Attrs      []Attribute `json:"attrs,omitempty" gorm:"serializer:json"`
-}
-
-type Page struct {
-	ID   uuid.UUID     `json:"id"`
-	Meta *PageMetadata `json:"meta"`
 }
 
 type DocumentMetadata struct {

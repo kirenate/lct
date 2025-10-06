@@ -23,12 +23,11 @@ func (r *Presentation) getDocumentPages(c *fiber.Ctx) error {
 	page := c.QueryInt("page")
 	pageSize := c.QueryInt("pageSize")
 
-	pages, err := r.service.GetPages(id, page, pageSize)
+	pages, total, err := r.service.GetPages(id, page, pageSize)
 	if err != nil {
 		return errors.Wrap(err, "pages not found")
 	}
-
-	return c.JSON(fiber.Map{"data": pages, "total": len(pages)})
+	return c.JSON(fiber.Map{"data": pages, "total": total})
 }
 
 func (r *Presentation) getSingleDocument(c *fiber.Ctx) error {

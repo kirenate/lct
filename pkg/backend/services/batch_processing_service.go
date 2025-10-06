@@ -188,13 +188,16 @@ func compressImage(file multipart.File) (*bytes.Buffer, error) {
 	return w, nil
 }
 
-func (r *Service) GetPages(id uuid.UUID, page, pageSize int) ([]schemas.PageMetadata, error) {
+func (r *Service) GetPages(id uuid.UUID, page, pageSize int) ([]schemas.PageMetadata, int64, error) {
 	pages, err := r.repository.GetPages(id, page, pageSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get pages")
+		return nil, 0, errors.Wrap(err, "failed to get pages")
 	}
-
-	return pages, nil
+	count, err := r.repository.CountPages(id)
+	if err != nil {
+		return nil, 0, errors.Wrap(err, "failed to count pages")
+	}
+	return pages, count, nil
 }
 
 func getOriginalLink(name string) string {
