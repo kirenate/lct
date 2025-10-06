@@ -141,7 +141,7 @@ func (r *Presentation) editDocument(c *fiber.Ctx) error {
 }
 
 func (r *Presentation) editPage(c *fiber.Ctx) error {
-	var body *schemas.PageMetadata
+	var body *string
 	err := c.BodyParser(&body)
 	if err != nil {
 		return &fiber.Error{

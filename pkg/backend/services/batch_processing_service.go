@@ -213,7 +213,7 @@ func (r *Service) UpdateDocument(doc *schemas.DocumentMetadata, id uuid.UUID) er
 	return nil
 }
 
-func (r *Service) UpdatePage(page *schemas.PageMetadata, pageId uuid.UUID) error {
+func (r *Service) UpdatePage(page *string, pageId uuid.UUID) error {
 	err := r.repository.UpdatePage(page, pageId)
 	if err != nil {
 		return errors.Wrap(err, "failed to update page")

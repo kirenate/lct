@@ -263,12 +263,8 @@ func (r *Repository) UpdateDocument(doc *schemas.DocumentMetadata, documentId uu
 	return nil
 }
 
-func (r *Repository) UpdatePage(page *schemas.PageMetadata, pageId uuid.UUID) error {
-	stmp := r.db.Table("page_metadata").Where("id", pageId)
-	if page.FullText != "" {
-		stmp = stmp.Update("full_text", page.FullText)
-	}
-	err := stmp.Error
+func (r *Repository) UpdatePage(text *string, pageId uuid.UUID) error {
+	err := r.db.Table("page_metadata").Where("id", pageId).Update("full_text", *text).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update document")
 	}
