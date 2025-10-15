@@ -22,8 +22,6 @@ type Repository struct {
 
 func NewRepository(minio *minio.Client, db *gorm.DB) *Repository {
 	repository := &Repository{minio: minio, db: db}
-	repository.db.Raw("CREATE INDEX search_index document_metadata USING GIN(to_tsvector('name'))")
-
 	return repository
 }
 
@@ -152,14 +150,15 @@ func (r *Repository) SaveText(text *[]schemas.Text) error {
 func (r *Repository) SearchDocuments(page, pageSize int, order, name, status, sorting string) (*[]schemas.DocumentMetadata, error) {
 	var docs *[]schemas.DocumentMetadata
 
+	name = "%" + name + "%"
 	stmp := r.db.Table("document_metadata").
-		Where("to_tsvector(name) @@ plainto_tsquery(?)", name).
+		Where("name ILIKE (?)", name).
 		Order(sorting + " " + order).
 		Offset(page * pageSize).
 		Limit(pageSize)
 
 	if status != "" {
-		stmp = stmp.Where("status = ?", status)
+		stmp = stmp.Where("status", status)
 	}
 
 	err := stmp.Find(&docs).Error
