@@ -40,7 +40,7 @@ type PageMetadata struct {
 	Thumb      string      `json:"thumb"`
 	Original   string      `json:"original"`
 	Number     int         `json:"number"`
-	FullText   string      `json:"fullText" gorm:"serializer:json"`
+	FullText   string      `json:"fullText"`
 	Attrs      []Attribute `json:"attrs,omitempty" gorm:"serializer:json"`
 }
 
