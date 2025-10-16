@@ -193,7 +193,7 @@ func (r *Repository) GetPages(documentId uuid.UUID, page, pageSize int) ([]schem
 	var pages *[]schemas.PageMetadata
 
 	err := r.db.Table("page_metadata").
-		Order("document_id DESC").
+		Order("number ASC").
 		Offset(page*pageSize).
 		Limit(pageSize).
 		Where("document_id", documentId).
