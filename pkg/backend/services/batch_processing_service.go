@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/segmentio/kafka-go"
+	"github.com/teadove/teasutils/service_utils/logger_utils"
 	"golang.org/x/image/draw"
 	"image"
 	"image/jpeg"
@@ -19,14 +21,18 @@ import (
 
 type Service struct {
 	repository *repositories.Repository
+	reader     *kafka.Reader
+	writer     *kafka.Writer
 }
 
-func NewService(repository *repositories.Repository) (*Service, error) {
-	service := &Service{repository: repository}
+func NewService(repository *repositories.Repository, reader *kafka.Reader, writer *kafka.Writer) (*Service, error) {
+	service := &Service{repository: repository, reader: reader, writer: writer}
 	err := service.repository.CreateBucket(settings_utils.Settings.MinioBucketName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create bucket")
 	}
+	go service.BackgroundConsumer(logger_utils.NewLoggedCtx())
+
 	return service, nil
 }
 
@@ -111,17 +117,17 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 
 	uThumb := getOriginalLink(uid.String() + "_thumb.jpg")
 
-	text, err := r.ProcessWithML(doc)
+	err = r.SendToQueue(doc, uid, documentId)
 	if err != nil {
-		return errors.Wrap(err, "failed to send image")
+		return errors.Wrap(err, "failed to send msg to queue")
 	}
+
 	page := &schemas.PageMetadata{
 		ID:         uid,
 		DocumentId: documentId,
 		Thumb:      uThumb,
 		Original:   u,
 		Number:     number,
-		FullText:   *text,
 	}
 
 	err = r.repository.SavePageToPg(page)
@@ -129,7 +135,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		return errors.Wrap(err, "failed to save page to postgres")
 	}
 
-	err = r.repository.StatusSuccess(documentId)
+	err = r.repository.ChangeStatus(documentId, repositories.StatusProcessing)
 	if err != nil {
 		return errors.Wrap(err, "failed to change status")
 	}

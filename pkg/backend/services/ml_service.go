@@ -12,20 +12,17 @@ import (
 	"time"
 )
 
-func (r *Service) ProcessWithML(file *multipart.FileHeader) (*string, error) {
+func (r *Service) ProcessWithML(doc *multipart.FileHeader, contents []byte) (*string, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	contents, err := file.Open()
-	defer contents.Close()
 
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open file")
-	}
-	part, err := writer.CreateFormFile("image", filepath.Base(file.Filename))
+	part, err := writer.CreateFormFile("image", filepath.Base(doc.Filename))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to write field")
 	}
-	io.Copy(part, contents)
+
+	readerBuf := bytes.NewBuffer(contents)
+	io.Copy(part, readerBuf)
 	writer.Close()
 
 	req, err := http.NewRequest(http.MethodPost, settings_utils.Settings.MlUrl, body)

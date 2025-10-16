@@ -3,11 +3,11 @@ module main.go
 go 1.24.3
 
 require (
-	github.com/disintegration/imaging v1.6.2
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/google/uuid v1.6.0
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/pkg/errors v0.9.1
+	github.com/segmentio/kafka-go v0.4.49
 	github.com/teadove/teasutils/fiber_utils v0.2.9
 	github.com/teadove/teasutils/service_utils v0.1.0
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
@@ -32,6 +32,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/teadove/teasutils/utils v0.3.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

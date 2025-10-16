@@ -24,6 +24,9 @@ type settings struct {
 
 	MlUrl        string `env:"ML_URL"`
 	BucketPolicy string `env:"BUCKET_POLICY"`
+
+	KafkaAddr  string `env:"KAFKA_ADDR"`
+	KafkaTopic string `env:"KAFKA_TOPIC"`
 }
 
 var Settings = settings_utils.MustGetSetting[settings]("LCT_") //nolint:gochecknoglobals // required

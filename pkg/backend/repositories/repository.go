@@ -205,8 +205,8 @@ func (r *Repository) GetPages(documentId uuid.UUID, page, pageSize int) ([]schem
 	return *pages, nil
 }
 
-func (r *Repository) StatusSuccess(documentId uuid.UUID) error {
-	err := r.db.Table("document_metadata").Where("id", documentId).Update("status", StatusComplete).Error
+func (r *Repository) ChangeStatus(documentId uuid.UUID, status string) error {
+	err := r.db.Table("document_metadata").Where("id", documentId).Update("status", status).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update status")
 	}

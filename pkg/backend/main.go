@@ -5,6 +5,7 @@ import (
 	minio2 "github.com/minio/minio-go"
 	"github.com/minio/minio-go/pkg/credentials"
 	"github.com/pkg/errors"
+	"github.com/segmentio/kafka-go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -40,7 +41,23 @@ func main() {
 	}
 
 	repository := repositories.NewRepository(minio, db)
-	service, err := services.NewService(repository)
+
+	reader := kafka.NewReader(kafka.ReaderConfig{
+		GroupTopics: []string{settings_utils.Settings.KafkaTopic},
+		GroupID:     "ml_processing",
+		Brokers:     []string{settings_utils.Settings.KafkaAddr},
+		Topic:       settings_utils.Settings.KafkaTopic,
+	})
+	defer reader.Close()
+
+	writer := kafka.Writer{
+		AllowAutoTopicCreation: true,
+		Addr:                   kafka.TCP(settings_utils.Settings.KafkaAddr),
+		Topic:                  settings_utils.Settings.KafkaTopic,
+		Balancer:               &kafka.LeastBytes{},
+	}
+
+	service, err := services.NewService(repository, reader, &writer)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to initialize service"))
 	}
