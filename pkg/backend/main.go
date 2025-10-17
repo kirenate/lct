@@ -43,18 +43,20 @@ func main() {
 	repository := repositories.NewRepository(minio, db)
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		GroupTopics: []string{settings_utils.Settings.KafkaTopic},
-		GroupID:     settings_utils.Settings.KafkaGroupId,
 		Brokers:     []string{settings_utils.Settings.KafkaAddr},
+		GroupID:     settings_utils.Settings.KafkaGroupId,
+		GroupTopics: []string{settings_utils.Settings.KafkaTopic},
 		Topic:       settings_utils.Settings.KafkaTopic,
+		MaxBytes:    100000000,
 	})
 	defer reader.Close()
 
 	writer := kafka.Writer{
-		AllowAutoTopicCreation: true,
 		Addr:                   kafka.TCP(settings_utils.Settings.KafkaAddr),
 		Topic:                  settings_utils.Settings.KafkaTopic,
 		Balancer:               &kafka.LeastBytes{},
+		BatchBytes:             100000000,
+		AllowAutoTopicCreation: true,
 	}
 
 	service, err := services.NewService(repository, reader, &writer)

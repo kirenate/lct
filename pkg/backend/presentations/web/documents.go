@@ -165,3 +165,33 @@ func (r *Presentation) editPage(c *fiber.Ctx) error {
 
 	return nil
 }
+
+//
+//func (r *Presentation) exportDocument(c *fiber.Ctx) error {
+//	id := c.Query("documentId")
+//	uid, err := uuid.Parse(id)
+//	if err != nil {
+//		return &fiber.Error{
+//			Code:    fiber.StatusUnprocessableEntity,
+//			Message: err.Error(),
+//		}
+//	}
+//	ext := c.Query("ext")
+//	textByte := c.Body()
+//	var text [][]string
+//	err = json.Unmarshal(textByte, &text)
+//	if err != nil {
+//		return &fiber.Error{
+//			Code:    fiber.StatusUnprocessableEntity,
+//			Message: err.Error(),
+//		}
+//	}
+//
+//	export := &services.Export{ID: uid, Text: text, Ext: ext}
+//	csv, err := r.service.CreatePageAndCsv(export)
+//	if err != nil {
+//		return errors.Wrap(err, "failed to export document")
+//	}
+//
+//	return nil
+//}

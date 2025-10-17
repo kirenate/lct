@@ -293,3 +293,13 @@ func (r *Repository) CheckPageLoading(id uuid.UUID) (int64, error) {
 
 	return count, nil
 }
+
+func (r *Repository) GetSinglePage(id uuid.UUID) (*schemas.PageMetadata, error) {
+	var page *schemas.PageMetadata
+	err := r.db.Table("page_metadata").Where("id", id).Find(&page).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get single page")
+	}
+
+	return page, nil
+}

@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -107,7 +106,6 @@ func (r *Service) PageLoaderChecker(ctx context.Context, id uuid.UUID) {
 	for {
 		time.Sleep(10 * time.Second)
 		count, err := r.repository.CheckPageLoading(id)
-		fmt.Println(count)
 		if err != nil {
 			zerolog.Ctx(ctx).Error().Err(err).Send()
 			break

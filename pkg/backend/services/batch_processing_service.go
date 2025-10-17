@@ -1,7 +1,9 @@
 package services
 
 import (
+	"archive/zip"
 	"bytes"
+	"encoding/csv"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/segmentio/kafka-go"
@@ -15,10 +17,17 @@ import (
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
+	"net/http"
+	"os"
 	"strings"
 	"time"
 )
 
+type Export struct {
+	ID   uuid.UUID  `json:"documentId"`
+	Text [][]string `json:"text"`
+	Ext  string     `json:"ext"`
+}
 type Service struct {
 	repository *repositories.Repository
 	reader     *kafka.Reader
@@ -223,5 +232,72 @@ func (r *Service) UpdatePage(page *string, pageId uuid.UUID) error {
 		return errors.Wrap(err, "failed to update page")
 	}
 
+	return nil
+}
+
+func (r *Service) CreatePageAndCsv(export *Export) ([]string, error) {
+	page, err := r.repository.GetSinglePage(export.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get pages")
+	}
+
+	link := getOriginalLink(page.ID.String())
+	out, err := os.Create("./downloads/" + page.ID.String() + ".jpg")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create jpg file")
+	}
+	defer out.Close()
+	resp, err := http.Get(link)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get image from minio")
+	}
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to copy response")
+	}
+	defer resp.Body.Close()
+
+	file, err := os.Create("./downloads/" + page.ID.String() + ".csv")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create csv file")
+	}
+	defer file.Close()
+
+	w := csv.NewWriter(file)
+	err = w.WriteAll(export.Text)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to write csv file")
+	}
+
+	return []string{"./downloads/" + page.ID.String() + ".jpg", "./downloads/" + page.ID.String() + ".csv"}, nil
+}
+
+func (r *Service) ZipFiles(paths []string) error {
+	buf := new(bytes.Buffer)
+	w := zip.NewWriter(buf)
+	defer w.Close()
+	for _, path := range paths {
+		file, err := os.Open(path)
+		if err != nil {
+			return errors.Wrap(err, "failed to open file")
+		}
+		f, err := w.Create(file.Name())
+		if err != nil {
+			return errors.Wrap(err, "failed to create file inside zip")
+		}
+		_, err = file.WriteTo(f)
+		if err != nil {
+			return errors.Wrap(err, "failed to write to zip file")
+		}
+	}
+	//n := strings.Split(paths[0], "/")
+	//name := strings.Replace(n[len(n)-1], ".jpg", "", 1)
+	//out, err := os.Create(name)
+	//if err != nil {
+	//	return errors.Wrap(err,"failed to create zip archive")
+	//}
+	//
+	//w.Copy(out)
 	return nil
 }
