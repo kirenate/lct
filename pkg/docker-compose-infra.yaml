@@ -47,6 +47,7 @@ services:
       - KAFKA_ADVERTISED_HOST_NAME=127.0.0.1
       - KAFKA_CLUSTER_ID=abcdefghijklmnopqrstuv
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_MESSAGE_MAX_BYTES=1737418240
     ports:
       - "9094:9094"
       - "9093:9093"
