@@ -2,32 +2,39 @@ package services
 
 import (
 	"bytes"
-	"fmt"
+	"context"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"io"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
 	"net/http"
-	"path/filepath"
 	"time"
 )
 
-func (r *Service) ProcessWithML(doc *multipart.FileHeader, contents []byte) (*string, error) {
+func (r *Service) ProcessWithML(ctx context.Context, contents []byte) (string, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	part, err := writer.CreateFormFile("image", filepath.Base(doc.Filename))
+	fw, err := writer.CreateFormFile("image", "image.png")
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to write field")
+		return "", errors.Wrap(err, "failed to write field")
 	}
 
 	readerBuf := bytes.NewBuffer(contents)
-	io.Copy(part, readerBuf)
-	writer.Close()
-
-	req, err := http.NewRequest(http.MethodPost, settings_utils.Settings.MlUrl, body)
+	_, err = io.Copy(fw, readerBuf)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create request")
+		return "", errors.Wrap(err, "failed to copy contents")
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return "", errors.Wrap(err, "writer close")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, settings_utils.Settings.MlUrl, body)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to create request")
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -35,13 +42,19 @@ func (r *Service) ProcessWithML(doc *multipart.FileHeader, contents []byte) (*st
 	client := http.Client{Timeout: time.Minute * 2}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return "", errors.Wrap(err, "request failed")
 	}
-	fmt.Println(resp.StatusCode)
+
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil && !errors.Is(err, io.EOF) {
-		return nil, errors.Wrap(err, "failed to read request body")
+		return "", errors.Wrap(err, "failed to read request body")
 	}
-	res := string(buf)
-	return &res, nil
+
+	zerolog.Ctx(ctx).
+		Info().
+		Int("resp_len", len(buf)).
+		Int("status_code", resp.StatusCode).
+		Msg("ml.request.processed")
+
+	return string(buf), nil
 }

@@ -93,11 +93,6 @@ func (r *Service) UploadDocument(minim, maxim int, name, code string) (*uuid.UUI
 		return nil, errors.Wrap(err, "failed to save document to postgres")
 	}
 
-	err = r.repository.CreateFolder(name)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create folder")
-	}
-
 	go r.PageLoaderChecker(logger_utils.NewLoggedCtx(), uid)
 
 	return &uid, nil
@@ -128,7 +123,7 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 
 	uThumb := getOriginalLink(uid.String() + "_thumb.jpg")
 
-	err = r.SendToQueue(doc, uid, documentId)
+	err = r.SendToQueue(uid, documentId)
 	if err != nil {
 		return errors.Wrap(err, "failed to send msg to queue")
 	}
@@ -226,7 +221,7 @@ func (r *Service) UpdateDocument(doc *schemas.DocumentMetadata, id uuid.UUID) er
 	return nil
 }
 
-func (r *Service) UpdatePage(page *string, pageId uuid.UUID) error {
+func (r *Service) UpdatePage(page string, pageId uuid.UUID) error {
 	err := r.repository.UpdatePage(page, pageId)
 	if err != nil {
 		return errors.Wrap(err, "failed to update page")

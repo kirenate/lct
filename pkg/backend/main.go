@@ -46,16 +46,15 @@ func main() {
 		Brokers:     []string{settings_utils.Settings.KafkaAddr},
 		GroupID:     settings_utils.Settings.KafkaGroupId,
 		GroupTopics: []string{settings_utils.Settings.KafkaTopic},
-		Topic:       settings_utils.Settings.KafkaTopic,
-		MaxBytes:    100000000,
+		MaxBytes:    1000,
 	})
 	defer reader.Close()
 
 	writer := kafka.Writer{
-		Addr:                   kafka.TCP(settings_utils.Settings.KafkaAddr),
-		Topic:                  settings_utils.Settings.KafkaTopic,
-		Balancer:               &kafka.LeastBytes{},
-		BatchBytes:             100000000,
+		Addr:  kafka.TCP(settings_utils.Settings.KafkaAddr),
+		Topic: settings_utils.Settings.KafkaTopic,
+		//Balancer:               &kafka.LeastBytes{},
+		//BatchBytes:             100000000,
 		AllowAutoTopicCreation: true,
 	}
 

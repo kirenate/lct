@@ -6,6 +6,7 @@ import (
 	"github.com/minio/minio-go"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"io"
 	"main.go/schemas"
 	"main.go/utils/settings_utils"
 	"mime/multipart"
@@ -109,21 +110,6 @@ func (r *Repository) SavePageToPg(page *schemas.PageMetadata) error {
 	err := r.db.Table("page_metadata").Save(&page).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to save page")
-	}
-
-	return nil
-}
-
-func (r *Repository) CreateFolder(folderName string) error {
-	if folderName == "" {
-		return nil
-	}
-	var b []byte
-	reader := bytes.NewReader(b)
-	_, err := r.minio.PutObject(settings_utils.Settings.MinioBucketName, folderName+"/",
-		reader, 0, minio.PutObjectOptions{})
-	if err != nil {
-		return errors.Wrap(err, "failed to create folder in minio")
 	}
 
 	return nil
@@ -271,8 +257,8 @@ func (r *Repository) UpdateDocument(doc *schemas.DocumentMetadata, documentId uu
 	return nil
 }
 
-func (r *Repository) UpdatePage(text *string, pageId uuid.UUID) error {
-	err := r.db.Table("page_metadata").Where("id", pageId).Update("full_text", *text).Error
+func (r *Repository) UpdatePage(text string, pageId uuid.UUID) error {
+	err := r.db.Table("page_metadata").Where("id", pageId).Update("full_text", text).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update document")
 	}
@@ -302,4 +288,18 @@ func (r *Repository) GetSinglePage(id uuid.UUID) (*schemas.PageMetadata, error) 
 	}
 
 	return page, nil
+}
+
+func (r *Repository) GetObjFromMinio(objName string) ([]byte, error) {
+	obj, err := r.minio.GetObject(settings_utils.Settings.MinioBucketName, objName, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get object from minio")
+	}
+
+	buf, err := io.ReadAll(obj)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return nil, errors.Wrap(err, "failed to read object")
+	}
+
+	return buf, nil
 }

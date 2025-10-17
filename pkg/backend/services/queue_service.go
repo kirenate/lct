@@ -3,35 +3,23 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/segmentio/kafka-go"
-	"io"
+	"github.com/teadove/teasutils/service_utils/logger_utils"
 	"main.go/repositories"
-	"mime/multipart"
 	"time"
 )
 
 type Msg struct {
-	Doc        *multipart.FileHeader
-	Contents   []byte
-	Uid        uuid.UUID
+	PageId     uuid.UUID
 	DocumentId uuid.UUID
 }
 
-func (r *Service) SendToQueue(doc *multipart.FileHeader, uid uuid.UUID, documentId uuid.UUID) error {
-	file, err := doc.Open()
-	if err != nil {
-		return errors.Wrap(err, "failed to open file")
-	}
-
-	contents, err := io.ReadAll(file)
-	if err != nil {
-		return errors.Wrap(err, "failed to read file")
-	}
-
-	msg := &Msg{Doc: doc, Uid: uid, DocumentId: documentId, Contents: contents}
+func (r *Service) SendToQueue(pageId uuid.UUID, documentId uuid.UUID) error {
+	msg := &Msg{PageId: pageId, DocumentId: documentId}
 	txt, err := json.Marshal(msg)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal kafka message")
@@ -44,6 +32,8 @@ func (r *Service) SendToQueue(doc *multipart.FileHeader, uid uuid.UUID, document
 		return errors.Wrap(err, "failed to write message to kafka")
 	}
 
+	zerolog.Ctx(logger_utils.NewLoggedCtx()).Info().Msg("kafka.msg.sent")
+
 	return nil
 }
 
@@ -54,6 +44,8 @@ func (r *Service) BackgroundConsumer(ctx context.Context) {
 		if err != nil {
 			zerolog.Ctx(ctx).Error().Err(err).Send()
 		}
+
+		time.Sleep(300 * time.Millisecond)
 	}
 }
 
@@ -62,7 +54,15 @@ func (r *Service) fetch(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch msg")
 	}
-	err = r.consume(&msg)
+
+	innerCtx := logger_utils.NewLoggedCtx()
+	innerCtx = logger_utils.WithValue(ctx, "kafka", fmt.Sprintf("%s:%d:%d", msg.Topic, msg.Partition, msg.Offset))
+
+	zerolog.Ctx(innerCtx).
+		Info().
+		Msg("kafka.msg.recieved")
+
+	err = r.consume(innerCtx, &msg)
 	if err != nil {
 		return errors.Wrap(err, "failed to consume msg")
 	}
@@ -70,17 +70,24 @@ func (r *Service) fetch(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to commit msg")
 	}
+	zerolog.Ctx(innerCtx).Info().Msg("kafka.msg.processed")
+
 	return nil
 }
 
-func (r *Service) consume(kafkaMsg *kafka.Message) error {
+func (r *Service) consume(ctx context.Context, kafkaMsg *kafka.Message) error {
 	var msg *Msg
 	err := json.Unmarshal(kafkaMsg.Value, &msg)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal kafka message")
 	}
 
-	text, err := r.ProcessWithML(msg.Doc, msg.Contents)
+	obj, err := r.repository.GetObjFromMinio(msg.PageId.String() + ".jpg")
+	if err != nil {
+		return errors.Wrap(err, "failed to get object from minio")
+	}
+
+	text, err := r.ProcessWithML(ctx, obj)
 	if err != nil {
 		errs := r.repository.ChangePageStatus(msg.DocumentId, repositories.StatusFailed)
 		if errs != nil {
@@ -89,15 +96,19 @@ func (r *Service) consume(kafkaMsg *kafka.Message) error {
 		return errors.Wrap(err, "failed to process image with ML")
 	}
 
-	err = r.repository.UpdatePage(text, msg.Uid)
+	err = r.repository.UpdatePage(text, msg.PageId)
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to postgres")
 	}
 
-	err = r.repository.ChangePageStatus(msg.Uid, repositories.StatusComplete)
+	err = r.repository.ChangePageStatus(msg.PageId, repositories.StatusComplete)
 	if err != nil {
 		return errors.Wrap(err, "failed to change status")
 	}
+
+	zerolog.Ctx(ctx).
+		Info().
+		Msg("msg.consumed")
 
 	return nil
 }

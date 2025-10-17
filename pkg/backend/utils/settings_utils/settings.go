@@ -22,7 +22,7 @@ type settings struct {
 	CertFile string `env:"SSL_CERTFILE"                       envDefault:"./.data/cert.pem"`
 	KeyFile  string `env:"SSL_KEYFILE"                        envDefault:"./.data/cert.key"`
 
-	MlUrl        string `env:"ML_URL"`
+	MlUrl        string `env:"ML_URL" envDefault:"http://158.160.198.84:8081/process"`
 	BucketPolicy string `env:"BUCKET_POLICY"`
 
 	KafkaAddr    string `env:"KAFKA_ADDR"`
