@@ -41,6 +41,7 @@ type PageMetadata struct {
 	Original   string      `json:"original"`
 	Number     int         `json:"number"`
 	FullText   string      `json:"fullText"`
+	Progress   string      `json:"progress"`
 	Attrs      []Attribute `json:"attrs,omitempty" gorm:"serializer:json"`
 }
 

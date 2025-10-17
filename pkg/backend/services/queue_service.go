@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -10,6 +11,7 @@ import (
 	"io"
 	"main.go/repositories"
 	"mime/multipart"
+	"time"
 )
 
 type Msg struct {
@@ -81,7 +83,7 @@ func (r *Service) consume(kafkaMsg *kafka.Message) error {
 
 	text, err := r.ProcessWithML(msg.Doc, msg.Contents)
 	if err != nil {
-		errs := r.repository.ChangeStatus(msg.DocumentId, repositories.StatusFailed)
+		errs := r.repository.ChangePageStatus(msg.DocumentId, repositories.StatusFailed)
 		if errs != nil {
 			return errors.Wrap(err, errs.Error())
 		}
@@ -93,10 +95,30 @@ func (r *Service) consume(kafkaMsg *kafka.Message) error {
 		return errors.Wrap(err, "failed to save page to postgres")
 	}
 
-	err = r.repository.ChangeStatus(msg.DocumentId, repositories.StatusComplete)
+	err = r.repository.ChangePageStatus(msg.Uid, repositories.StatusComplete)
 	if err != nil {
 		return errors.Wrap(err, "failed to change status")
 	}
 
 	return nil
+}
+
+func (r *Service) PageLoaderChecker(ctx context.Context, id uuid.UUID) {
+	for {
+		time.Sleep(10 * time.Second)
+		count, err := r.repository.CheckPageLoading(id)
+		fmt.Println(count)
+		if err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Send()
+			break
+		}
+
+		if count == 0 {
+			err = r.repository.ChangeStatus(id, repositories.StatusComplete)
+			if err != nil {
+				zerolog.Ctx(ctx).Error().Err(err).Send()
+			}
+			break
+		}
+	}
 }

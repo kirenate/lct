@@ -89,6 +89,8 @@ func (r *Service) UploadDocument(minim, maxim int, name, code string) (*uuid.UUI
 		return nil, errors.Wrap(err, "failed to create folder")
 	}
 
+	go r.PageLoaderChecker(logger_utils.NewLoggedCtx(), uid)
+
 	return &uid, nil
 }
 
@@ -128,16 +130,12 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		Thumb:      uThumb,
 		Original:   u,
 		Number:     number,
+		Progress:   repositories.StatusProcessing,
 	}
 
 	err = r.repository.SavePageToPg(page)
 	if err != nil {
 		return errors.Wrap(err, "failed to save page to postgres")
-	}
-
-	err = r.repository.ChangeStatus(documentId, repositories.StatusProcessing)
-	if err != nil {
-		return errors.Wrap(err, "failed to change status")
 	}
 
 	return nil

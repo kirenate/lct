@@ -44,7 +44,7 @@ func main() {
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		GroupTopics: []string{settings_utils.Settings.KafkaTopic},
-		GroupID:     "ml_processing",
+		GroupID:     settings_utils.Settings.KafkaGroupId,
 		Brokers:     []string{settings_utils.Settings.KafkaAddr},
 		Topic:       settings_utils.Settings.KafkaTopic,
 	})

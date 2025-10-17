@@ -214,6 +214,15 @@ func (r *Repository) ChangeStatus(documentId uuid.UUID, status string) error {
 	return nil
 }
 
+func (r *Repository) ChangePageStatus(id uuid.UUID, status string) error {
+	err := r.db.Table("page_metadata").Where("id", id).Update("progress", status).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to update status")
+	}
+
+	return nil
+}
+
 func (r *Repository) CountDocs() (int64, error) {
 	var count int64
 	err := r.db.Table("document_metadata").Count(&count).Error
@@ -269,4 +278,18 @@ func (r *Repository) UpdatePage(text *string, pageId uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (r *Repository) CheckPageLoading(id uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Table("page_metadata").
+		Where("document_id", id).
+		Where("progress", StatusProcessing).
+		Count(&count).Error
+
+	if err != nil {
+		return -1, errors.Wrap(err, "failed to count loading pages")
+	}
+
+	return count, nil
 }
