@@ -111,11 +111,11 @@ func (r *Service) UploadPage(doc *multipart.FileHeader, documentId uuid.UUID, nu
 		return errors.Wrap(err, "failed to save page to minio")
 	}
 	u := getOriginalLink(uid.String() + ".jpg")
-	_, err = contents.Seek(0, 0)
+	newContents, err := doc.Open()
 	if err != nil {
-		return errors.Wrap(err, "failed to seek contents")
+		return errors.Wrap(err, "failed to open doc 2nd time")
 	}
-	processedImg, err := compressImage(contents)
+	processedImg, err := compressImage(newContents)
 	if err != nil {
 		return errors.Wrap(err, "failed to compress image")
 	}
