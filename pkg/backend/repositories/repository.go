@@ -241,7 +241,7 @@ func (r *Repository) UpdateDocument(doc *schemas.DocumentMetadata, documentId uu
 		stmp = stmp.Update("status", doc.Status)
 	}
 	if doc.Max != 0 {
-		stmp = stmp.Update("code", doc.Code)
+		stmp = stmp.Update("max", doc.Max)
 	}
 	if doc.Min != 0 {
 		stmp = stmp.Update("min", doc.Min)
