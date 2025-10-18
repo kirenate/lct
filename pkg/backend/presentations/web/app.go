@@ -34,7 +34,7 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app.Get("/api/documents/:documentId", r.getSingleDocument)
 	app.Get("/api/documents", r.getDocuments)
 	app.Post("/api/documents", r.uploadDocument)
-	//app.Post("/api/documents/:documentId/export/:ext", r.exportDocument)
+	app.Get("/api/documents/:documentId/export", r.exportDocument)
 
 	app.Delete("/api/:documentId", r.deleteDocument)
 
