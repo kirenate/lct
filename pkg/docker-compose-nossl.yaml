@@ -9,11 +9,12 @@ services:
       _PG__HOST: "postgres"
     build:
       context: backend
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile-nossl
     depends_on:
       - postgres
     volumes:
-      - "./backend/.env:/app/.env"
+        - ".data:/.data"
+        - "./backend/.env:/.env"
     deploy:
       resources:
         limits:

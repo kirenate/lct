@@ -181,7 +181,7 @@ func (r *Presentation) exportDocument(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to export document")
 	}
 
-	buf, err := r.service.ZipFiles(path)
+	buf, err := r.service.ZipFiles(c.UserContext(), path)
 	if err != nil {
 		return errors.Wrap(err, "zip files")
 	}

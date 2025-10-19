@@ -3,8 +3,10 @@ package services
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"github.com/segmentio/kafka-go"
 	"github.com/teadove/teasutils/service_utils/logger_utils"
 	"golang.org/x/image/draw"
@@ -265,10 +267,10 @@ func (r *Service) CreatePages(id uuid.UUID) ([]string, error) {
 	return paths, nil
 }
 
-func (r *Service) ZipFiles(paths []string) ([]byte, error) {
+func (r *Service) ZipFiles(ctx context.Context, paths []string) ([]byte, error) {
 	var buf bytes.Buffer
 	w := zip.NewWriter(&buf)
-	defer w.Close()
+
 	for _, path := range paths {
 		file, err := os.Open(path)
 		if err != nil {
@@ -278,6 +280,7 @@ func (r *Service) ZipFiles(paths []string) ([]byte, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create file inside zip")
 		}
+
 		_, err = file.WriteTo(f)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to write to zip file")
@@ -288,6 +291,17 @@ func (r *Service) ZipFiles(paths []string) ([]byte, error) {
 			return nil, errors.Wrap(err, "failed to remove file")
 		}
 	}
+
+	err := w.Close()
+	if err != nil {
+		return nil, errors.Wrap(err, "writer close")
+	}
+
+	zerolog.Ctx(ctx).
+		Info().
+		Int("files", len(paths)).
+		Int("size", buf.Len()).
+		Msg("zipped")
 
 	return buf.Bytes(), nil
 }
